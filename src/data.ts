@@ -15,7 +15,7 @@ export const event = {
   mapsUrl:
     "https://www.google.com/maps/search/?api=1&query=UTSA+Business+Building+5+Paseo+Del+Norte+San+Antonio+TX+78249",
   registerUrl:
-    "https://events.mlh.com/events/15160-hacktoberfest-hack-day-san-antonio-x-rowdylaunch",
+    "https://events.mlh.com/events/15160-hacktoberfest-hack-day-san-antonio-x-rowdylaunch?intent=register",
   mlhEventUrl:
     "https://events.mlh.com/events/15160-hacktoberfest-hack-day-san-antonio-x-rowdylaunch",
   codeOfConductUrl: "https://github.com/MLH/mlh-policies/blob/main/code-of-conduct.md",
