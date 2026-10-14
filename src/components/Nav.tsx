@@ -12,14 +12,24 @@ const items = [
 ];
 
 // The hero already shows one orange button. The nav pill stays hidden
-// until that button has scrolled away, so orange appears once per screen.
+// until that button has faded out, so orange appears once per screen.
+// Hero copy finishes fading at 42% of the hero's scroll span (see Hero.tsx),
+// so the threshold is tied to that span rather than a fixed viewport fraction.
 function usePastHeroCta() {
   const [past, setPast] = useState(false);
   useEffect(() => {
-    const on = () => setPast(window.scrollY > window.innerHeight * 0.45);
+    const on = () => {
+      const hero = document.getElementById("top");
+      const span = hero ? Math.max(hero.offsetHeight - window.innerHeight, 1) : window.innerHeight;
+      setPast(window.scrollY > span * 0.42);
+    };
     on();
     window.addEventListener("scroll", on, { passive: true });
-    return () => window.removeEventListener("scroll", on);
+    window.addEventListener("resize", on);
+    return () => {
+      window.removeEventListener("scroll", on);
+      window.removeEventListener("resize", on);
+    };
   }, []);
   return past;
 }
