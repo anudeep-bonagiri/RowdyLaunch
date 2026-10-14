@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { m, useScroll, useTransform, useReducedMotion } from "framer-motion";
 import Airlock from "./Airlock";
-import Mascot from "./Mascot";
 import Countdown, { useEventPhase } from "./Countdown";
 import { event } from "../data";
 
@@ -53,7 +52,7 @@ export default function Hero() {
             <span className="cloud" style={{ width: "46%", height: "16%", left: "0%", top: "26%", animationDuration: "38s" }} />
             <span className="cloud" style={{ width: "34%", height: "12%", left: "20%", top: "58%", animationDuration: "52s", animationDelay: "-20s" }} />
             <span className="cloud" style={{ width: "28%", height: "10%", left: "-10%", top: "74%", animationDuration: "44s", animationDelay: "-9s" }} />
-            <Mascot className="mascot" />
+            <img className="mascot" src="/mascot.png" alt="" width={896} height={896} />
           </m.div>
 
           <m.div className="hull" style={still ?? { scale: hullScale, opacity: hullOpacity }} aria-hidden="true">

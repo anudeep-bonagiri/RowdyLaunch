@@ -34,7 +34,7 @@ Design references, in priority order: the Octocat-at-the-airlock image in `~/Des
 
 ## Assets
 
-- The mascot is an original astronaut roadrunner drawn in `src/components/Mascot.tsx`. No GitHub or UTSA artwork is used.
+- `public/mascot.png` is Jetpacktocat from GitHub's Octodex (https://octodex.github.com/), used as a placeholder with a footer credit. GitHub's Octodex FAQ does not cover this use, so replace it with original art before the event. An original SVG attempt is in git history (src/components/Mascot.tsx, removed 2026-10-14).
 - `public/favicon.svg` is drawn in place. `public/og.png` is the link-preview image; regenerate it if the hero changes.
 - Fonts are self-hosted in `public/fonts` (latin subsets of Unbounded, Sora and JetBrains Mono, OFL licensed).
 - No MLH trust badge: that asset is for MLH Member Events. The event is linked from the nav, the hero and the footer instead.
