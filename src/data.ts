@@ -38,12 +38,12 @@ export const crew = [
 export const flightPlan = {
   draft: true,
   stops: [
-    { t: "10:00", label: "Doors open, check in", detail: "Grab a seat, connect to Wi-Fi, sign in to GitHub." },
-    { t: "10:30", label: "Mission briefing", detail: "How Hacktoberfest works, how to pick an issue, how a pull request gets accepted." },
-    { t: "11:00", label: "Hacking begins", detail: "Pair up or fly solo. Organizers float between tables for help." },
-    { t: "13:00", label: "Midday break", detail: "Step away from the screen. Come back with a second issue in mind." },
-    { t: "16:00", label: "PR review and demos", detail: "Show what you shipped. Get a second pair of eyes before you submit." },
-    { t: "16:45", label: "Wrap-up and photos", detail: "Group photo, tag #Hacktoberfest, trade GitHub handles." },
+    { t: "10:00", label: "Doors open and check-in", detail: "Find a seat, get on the Wi-Fi and sign in to GitHub." },
+    { t: "10:30", label: "Briefing", detail: "How Hacktoberfest counts a contribution, how to find an issue you can finish today, and what maintainers look for in a pull request." },
+    { t: "11:00", label: "Hacking starts", detail: "Work alone or with a partner. Organizers walk the tables all day." },
+    { t: "13:00", label: "Break", detail: "Take an hour away from the screen." },
+    { t: "16:00", label: "Review and demos", detail: "Show what you shipped and get a review before you submit." },
+    { t: "16:45", label: "Wrap-up", detail: "Group photo and GitHub handles. Tag #Hacktoberfest if you post." },
     { t: "17:00", label: "Doors close", detail: "" },
   ],
 };
@@ -54,7 +54,7 @@ export const faq: { tab: string; items: { q: string; a: string }[] }[] = [
     items: [
       {
         q: "What is a Hacktoberfest hack day?",
-        a: "A one-day meetup where you work on open-source pull requests alongside other people doing the same. Hacktoberfest runs all of October; this is the San Antonio in-person day for it.",
+        a: "A one-day meetup where you work on open-source pull requests in a room with other people doing the same. Hacktoberfest runs all of October. This is the in-person day for it in San Antonio.",
       },
       {
         q: "Who is RowdyLaunch?",
@@ -79,7 +79,7 @@ export const faq: { tab: string; items: { q: string; a: string }[] }[] = [
       },
       {
         q: "Can I register on the day?",
-        a: "Register ahead on MLH so we can plan seating. If you show up without registering, check in with an organizer at the door.",
+        a: "Register ahead on MLH so we know how many seats to set up. If you turn up unregistered, find an organizer at the door and we will sort it out.",
       },
     ],
   },
@@ -92,7 +92,7 @@ export const faq: { tab: string; items: { q: string; a: string }[] }[] = [
       },
       {
         q: "Where exactly is it?",
-        a: `${event.venue}, ${event.address}. Look for the RowdyLaunch signs once you are in the building.`,
+        a: `${event.venue}, ${event.address}. There will be RowdyLaunch signs from the entrance to the room.`,
       },
       {
         q: "What is the code of conduct?",

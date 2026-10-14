@@ -77,15 +77,15 @@ export default function Hero() {
               <span>Hack Day at UTSA</span>
             </h1>
             <p>
-              One Saturday, one room, a lot of pull requests. Pick an open-source issue, ship a fix, and leave
-              with your first Hacktoberfest contribution and a crew to build with after.
+              Spend a Saturday at UTSA getting a pull request merged into an open-source project, with
+              organizers who have done it before sitting at the next table.
             </p>
             <div className="actions">
               <a className="btn primary" href={event.registerUrl} target="_blank" rel="noopener">
-                Board the mission
+                Register on MLH
               </a>
               <a className="btn ghost" href="#mission">
-                Read the brief
+                How the day works
               </a>
             </div>
           </div>
@@ -94,7 +94,7 @@ export default function Hero() {
 
         <motion.div className="midline" style={still ? { opacity: 0 } : { opacity: midOpacity, y: midY }} aria-hidden="true">
           <span>Hatch open</span>
-          <h2>Next stop: your first merged pull request.</h2>
+          <h2>Seven hours to your first merged pull request.</h2>
         </motion.div>
 
         <motion.div className="scroll-cue" style={still ?? { opacity: cueOpacity }} aria-hidden="true">

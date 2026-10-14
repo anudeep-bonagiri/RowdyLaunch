@@ -23,21 +23,22 @@ export function Mission() {
   return (
     <section className="section" id="mission">
       <div className="inner">
-        <Head eyebrow="01 · Mission brief" title="A one-day Hacktoberfest hack day in San Antonio" />
+        <Head eyebrow="Mission brief" title="A one-day Hacktoberfest hack day in San Antonio" />
         <motion.div className="brief" {...rise}>
-          <div className="panel text">
+          <div className="text">
             <p>
-              <strong>Hacktoberfest</strong> runs the whole month of October. You contribute pull requests to
+              <strong>Hacktoberfest</strong> runs the whole month of October. You open pull requests on
               open-source projects and the maintainers accept them. This is the in-person day for it in San
-              Antonio: a room full of people doing the same thing, with organizers who have done it before.
+              Antonio. You get a room full of people doing the same thing and organizers who have done it before.
             </p>
             <p>
-              <strong>{event.host}</strong> is hosting. {event.hostBlurb} A hack day is where cofounders meet.
+              <strong>{event.host}</strong> is hosting. {event.hostBlurb} If you are looking for a cofounder,
+              this is a good room to look in.
             </p>
             <ol className="steps">
               <li>Register on MLH and bring a laptop with Git and a GitHub account.</li>
               <li>At the morning briefing, pick a beginner-friendly issue from a project you use.</li>
-              <li>Fix it, open the pull request, get it reviewed before you leave.</li>
+              <li>Fix it, open the pull request and get it reviewed before you leave.</li>
             </ol>
           </div>
           <dl className="panel rows">
@@ -59,12 +60,12 @@ export function FlightPlan() {
     <section className="section" id="flight-plan">
       <div className="inner">
         <Head
-          eyebrow="02 · Flight plan"
+          eyebrow="Flight plan"
           title="Seven hours, one pull request minimum"
-          blurb="Doors open at 10 and close at 5. Here is how the day is paced."
+          blurb="Doors open at 10 and close at 5. This is how the day runs."
         />
         {flightPlan.draft && <span className="draft">Draft schedule · subject to change</span>}
-        <motion.div className="panel plan" {...rise}>
+        <motion.div className="plan" {...rise}>
           {flightPlan.stops.map((s) => (
             <div className="stop" key={s.t}>
               <div className="t">{s.t}</div>
@@ -86,7 +87,7 @@ export function Crew() {
   return (
     <section className="section" id="crew">
       <div className="inner">
-        <Head eyebrow="03 · Crew" title="Who is running the day" blurb="Find any of us if you are stuck, lost, or looking for a cofounder." />
+        <Head eyebrow="Crew" title="Who is running the day" blurb="Find any of us if you get stuck or want an introduction." />
         <motion.div className="crew" {...rise}>
           {crew.map((m) => (
             <div className="panel member" key={m.name}>
@@ -107,13 +108,13 @@ export function GroundControl() {
   return (
     <section className="section" id="ground-control">
       <div className="inner">
-        <Head eyebrow="04 · Ground control" title="Landing site" />
+        <Head eyebrow="Ground control" title="Landing site" />
         <motion.div className="ground" {...rise}>
           <div className="panel coords">
             <div className="big">{event.venue}</div>
             <div className="addr">{event.address}</div>
             <p style={{ color: "var(--fg-2)" }}>
-              Look for the RowdyLaunch signs once you are inside. Bring a charger; outlets are shared.
+              There will be RowdyLaunch signs from the entrance to the room. Bring a charger. Outlets are shared.
             </p>
             <div>
               <a className="btn ghost" href={event.mapsUrl} target="_blank" rel="noopener">Open in Maps</a>
@@ -134,14 +135,14 @@ export function Supplies() {
     <section className="section" id="supplies">
       <div className="inner">
         <Head
-          eyebrow="05 · Supplies"
+          eyebrow="Supplies"
           title="Sponsor the mission"
-          blurb="Food, swag and prizes come from sponsors. Put your logo in front of the next cohort of San Antonio builders."
+          blurb="Sponsors cover the food, swag and prizes. In return your logo goes on this page and in the room with everyone who shows up."
         />
         <motion.div className="supplies" {...rise}>
           <div className="panel" style={{ display: "grid", gap: 14, alignContent: "start" }}>
             <p style={{ color: "var(--fg-2)" }}>
-              Sponsor slots are open for this event. Reach the crew through the MLH event page
+              Sponsor slots are open. Reach the organizers through the MLH event page
               {event.contactEmail ? " or by email" : ""}.
             </p>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -168,8 +169,8 @@ export function FAQ() {
   return (
     <section className="section" id="faq">
       <div className="inner">
-        <Head eyebrow="06 · Pre-flight questions" title="Before you board" />
-        <motion.div className="panel" style={{ display: "grid", gap: 18 }} {...rise}>
+        <Head eyebrow="Pre-flight questions" title="Before you board" />
+        <motion.div className="faqwrap" {...rise}>
           <div className="tabs" role="tablist" aria-label="FAQ categories">
             {faq.map((g, i) => (
               <button
