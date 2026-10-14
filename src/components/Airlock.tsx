@@ -1,6 +1,6 @@
 // The ship interior, drawn in SVG so it scales to any viewport without assets.
 // Eight bulkhead wedges around a circular hatch, red indicator strips on the
-// upper panels, white light bars left and right, a walkway at the bottom.
+// upper panels, a walkway at the bottom.
 // `cx` lets the hatch sit right of centre on wide screens so the copy has room.
 
 export const HATCH_R = 200; // inner radius in SVG units; .porthole-view mirrors it via --hatch
@@ -64,14 +64,6 @@ export default function Airlock({ cx = 720 }: { cx?: number }) {
         );
       })}
 
-      {/* white light bars, left and right of the hatch */}
-      {[-1, 1].map((s) => (
-        <g key={s} transform={`translate(${CX + s * 470} ${CY + 70})`}>
-          <rect x="-70" y="-26" width="140" height="52" rx="8" fill="#2a2634" />
-          <rect x="-66" y="-20" width="132" height="40" rx="10" fill="#f6f1e6" opacity="0.18" />
-          <rect x="-58" y="-14" width="116" height="28" rx="6" fill="#f6f1e6" opacity="0.95" />
-        </g>
-      ))}
 
       {/* hatch ring */}
       <circle cx={CX} cy={CY} r={HATCH_R + 27} fill="none" stroke="url(#ring)" strokeWidth="26" />
