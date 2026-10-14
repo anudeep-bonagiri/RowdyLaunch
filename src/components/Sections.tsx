@@ -245,7 +245,6 @@ export function Footer() {
             <a href={event.mlhEventUrl} target="_blank" rel="noopener">Event on MLH</a>
             <a href={event.hacktoberfestUrl} target="_blank" rel="noopener">Hacktoberfest</a>
             <a href={event.repoUrl} target="_blank" rel="noopener">Site source</a>
-            <a href="https://octodex.github.com/" target="_blank" rel="noopener">Octocat by GitHub</a>
           </div>
         </div>
         <p className="fine">

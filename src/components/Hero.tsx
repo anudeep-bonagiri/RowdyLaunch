@@ -52,7 +52,7 @@ export default function Hero() {
             <span className="cloud" style={{ width: "46%", height: "16%", left: "0%", top: "26%", animationDuration: "38s" }} />
             <span className="cloud" style={{ width: "34%", height: "12%", left: "20%", top: "58%", animationDuration: "52s", animationDelay: "-20s" }} />
             <span className="cloud" style={{ width: "28%", height: "10%", left: "-10%", top: "74%", animationDuration: "44s", animationDelay: "-9s" }} />
-            <img className="mascot" src="/mascot.png" alt="" width={896} height={896} />
+            <img className="mascot" src="/mascot.png" alt="" width={960} height={614} />
           </m.div>
 
           <m.div className="hull" style={still ?? { scale: hullScale, opacity: hullOpacity }} aria-hidden="true">

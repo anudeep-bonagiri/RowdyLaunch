@@ -137,9 +137,10 @@ button { font: inherit; color: inherit; }
 @media (prefers-reduced-motion: no-preference) { .porthole-view .cloud { animation: drift linear infinite; } }
 @keyframes drift { from { transform: translateX(-140%); } to { transform: translateX(260%); } }
 
-.mascot { position: absolute; left: 50%; top: 54%; width: 34%; height: auto; margin-left: -17%; }
-@media (prefers-reduced-motion: no-preference) { .mascot { animation: hover 4s ease-in-out infinite; } }
-@keyframes hover { 0%, 100% { translate: 0 0; } 50% { translate: 0 -6%; } }
+/* sprinting roadrunner, landscape; sits low in the porthole and bobs as it runs */
+.mascot { position: absolute; left: 50%; top: 46%; width: 66%; height: auto; margin-left: -33%; filter: drop-shadow(0 10px 18px rgba(28, 59, 87, 0.35)); }
+@media (prefers-reduced-motion: no-preference) { .mascot { animation: sprint 0.9s ease-in-out infinite; } }
+@keyframes sprint { 0%, 100% { translate: 0 0; } 50% { translate: 1.5% -3%; } }
 
 .hero .copy {
   position: absolute; inset: 0; display: grid; grid-template-rows: auto 1fr auto; justify-items: center; pointer-events: none;
