@@ -101,16 +101,6 @@ button { font: inherit; color: inherit; }
   .nav { padding-left: 14px; left: 16px; transform: none; max-width: calc(100vw - 16px - 64px - 28px); }
 }
 
-.toast {
-  position: fixed; top: calc(70px + env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%); z-index: 49;
-  font-size: 0.82rem; color: var(--fg-2); background: var(--glass); border: 1px solid var(--line);
-  border-radius: 999px; padding: 7px 14px; display: flex; gap: 10px; align-items: center; white-space: nowrap;
-  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); max-width: calc(100vw - 32px);
-}
-.toast i { width: 7px; height: 7px; border-radius: 50%; background: var(--orange); box-shadow: 0 0 8px var(--orange); flex: none; }
-.toast a { color: var(--orange-2); text-decoration: none; font-weight: 600; }
-.toast span { overflow: hidden; text-overflow: ellipsis; }
-@media (max-width: 760px) { .toast { left: 16px; transform: none; max-width: calc(100vw - 16px - 64px - 28px); } }
 
 /* ---------- buttons ---------- */
 .btn {
@@ -129,17 +119,14 @@ button { font: inherit; color: inherit; }
   position: relative; height: 260vh; z-index: 1;
   --svg-scale: max(100vw / 1440, 100vh / 900);   /* xMidYMid slice scale factor */
   --hatch: calc(var(--svg-scale) * 428);          /* 2 x (HATCH_R + 14) */
-  --hatch-dx: calc(var(--svg-scale) * 150);       /* HATCH_DX in Hero.tsx */
-  --copy-w: calc(50% + var(--hatch-dx) - var(--hatch) / 2 - 40px);
 }
-@media (max-width: 760px) { .hero { --hatch-dx: 0px; } }
 .hero .pin { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
 .hero .scene { position: absolute; inset: 0; }
 .hero svg.airlock { position: absolute; inset: 0; width: 100%; height: 100%; }
 .porthole-view {
   /* matches the SVG hatch (inner radius 214 in a 1440x900 box, xMidYMid slice),
      offset right by the same amount the SVG moves it on wide screens */
-  position: absolute; left: calc(50% + var(--hatch-dx)); top: 50%; width: var(--hatch); height: var(--hatch);
+  position: absolute; left: 50%; top: 50%; width: var(--hatch); height: var(--hatch);
   /* centered with margins, not translate: framer-motion owns the transform */
   margin-left: calc(var(--hatch) / -2); margin-top: calc(var(--hatch) / -2);
   border-radius: 50%; overflow: hidden;
@@ -155,12 +142,11 @@ button { font: inherit; color: inherit; }
 @keyframes drift { from { transform: translateX(-140%); } to { transform: translateX(260%); } }
 
 .mascot {
-  --mw: clamp(96px, 13vmin, 170px);
-  position: absolute; left: calc(50% + var(--hatch-dx)); bottom: 10vh; width: var(--mw); height: auto; margin-left: calc(var(--mw) / -2);
-  filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.55));
+  position: absolute; left: 50%; top: 58%; width: 32%; height: auto; margin-left: -16%;
+  filter: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.35));
 }
 @media (prefers-reduced-motion: no-preference) { .mascot { animation: hover 4s ease-in-out infinite; } }
-@keyframes hover { 0%, 100% { margin-bottom: 0; } 50% { margin-bottom: 8px; } }
+@keyframes hover { 0%, 100% { translate: 0 0; } 50% { translate: 0 -6%; } }
 
 .midline {
   position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); text-align: center; pointer-events: none;
@@ -170,19 +156,21 @@ button { font: inherit; color: inherit; }
 .midline span { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(255, 255, 255, 0.8); }
 
 .hero .copy {
-  position: absolute; left: 0; right: 0; top: 0; bottom: 0; display: grid; grid-template-rows: 1fr auto; pointer-events: none;
-  padding: calc(96px + env(safe-area-inset-top, 0px)) clamp(16px, 4vw, 48px) 28px;
+  position: absolute; inset: 0; display: grid; grid-template-rows: auto 1fr auto; justify-items: center; pointer-events: none;
+  padding: calc(86px + env(safe-area-inset-top, 0px)) clamp(16px, 4vw, 48px) 6vh; text-align: center;
 }
 .hero .copy > * { pointer-events: auto; }
-.hero .title { display: grid; gap: 10px; align-content: start; width: var(--copy-w); max-width: 560px; min-width: 0; }
-.hero .title h1 { font-size: clamp(2rem, 3.9vw, 3.5rem); font-weight: 900; letter-spacing: -0.02em; line-height: 0.98; text-shadow: 0 2px 30px rgba(0, 0, 0, 0.6); }
-.hero .title p { text-shadow: 0 1px 12px rgba(0, 0, 0, 0.7); }
-.hero .title h1 span { display: block; color: var(--orange-2); font-size: 0.42em; font-weight: 700; letter-spacing: 0.02em; margin-top: 10px; }
-.hero .title p { color: var(--fg-2); max-width: 38ch; }
-.hero .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+.hero .top { display: grid; gap: 8px; justify-items: center; }
+.hero .top h1 { font-size: clamp(2.2rem, 5vw, 4rem); font-weight: 900; letter-spacing: -0.02em; line-height: 1; text-shadow: 0 2px 30px rgba(0, 0, 0, 0.6); }
+.hero .when { font-family: var(--mono); font-size: 0.74rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg-2); }
+.hero .bottom { grid-row: 3; display: grid; gap: 12px; justify-items: center; }
+.btn.lg { padding: 15px 28px; font-size: 1.02rem; }
+.tminus { font-family: var(--mono); font-size: 0.8rem; letter-spacing: 0.08em; color: var(--fg-2); font-variant-numeric: tabular-nums; display: inline-flex; align-items: center; gap: 10px; }
+.tminus i { width: 7px; height: 7px; border-radius: 50%; background: var(--red); box-shadow: 0 0 8px var(--red); }
+@media (prefers-reduced-motion: no-preference) { .tminus i { animation: blink 1.4s steps(2, jump-none) infinite; } }
 
 .readout {
-  justify-self: end; align-self: end; display: grid; gap: 8px; padding: 14px 16px; border-radius: 14px;
+  display: grid; gap: 8px; padding: 14px 16px; border-radius: 14px;
   background: linear-gradient(180deg, #221e2c, #16131d); border: 1px solid var(--line);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 20px 40px rgba(0, 0, 0, 0.4);
   font-family: var(--mono); min-width: 240px;
@@ -199,27 +187,12 @@ button { font: inherit; color: inherit; }
 .readout .where { font-size: 0.72rem; color: var(--fg-2); display: grid; gap: 2px; }
 
 @media (max-width: 760px) {
-  .hero .copy { grid-template-rows: auto 1fr auto; padding-top: calc(110px + env(safe-area-inset-top, 0px)); }
-  .readout { justify-self: stretch; min-width: 0; }
+  .hero .copy { padding-top: calc(124px + env(safe-area-inset-top, 0px)); }
+  .hero .top h1 { font-size: clamp(2rem, 9vw, 2.6rem); }
+  .hero .when { font-size: 0.62rem; }
   .readout .digits b { font-size: 1.2rem; }
-  .hero .title { width: auto; }
-  .hero .title h1 { font-size: clamp(1.9rem, 9.2vw, 3rem); overflow-wrap: anywhere; }
-  .porthole-view { top: 79%; }
-  .mascot { bottom: 27vh; --mw: 96px; }
-  .hero .title p { font-size: 0.95rem; }
-  .scroll-cue { display: none; }
 }
 
-/* shorter or narrower desktops: keep the readout clear of the walkway */
-@media (min-width: 761px) and (max-width: 1200px), (min-width: 761px) and (max-height: 820px) {
-  .hero .copy { padding-top: calc(116px + env(safe-area-inset-top, 0px)); }
-  .readout { min-width: 0; padding: 12px 14px; gap: 6px; }
-  .readout .digits b { font-size: 1.15rem; padding: 3px 6px; }
-  .readout .where { font-size: 0.66rem; }
-  .mascot { bottom: 7vh; }
-}
-
-.scroll-cue { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.2em; color: var(--fg-3); text-transform: uppercase; }
 
 /* ---------- sections ---------- */
 main { position: relative; z-index: 1; }
@@ -235,6 +208,7 @@ main { position: relative; z-index: 1; }
 
 /* mission brief */
 .brief { display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px; align-items: start; }
+.brief .facts { display: grid; gap: 14px; }
 .brief .rows { display: grid; }
 .brief .row { display: grid; grid-template-columns: 110px 1fr; gap: 14px; padding: 12px 0; border-top: 1px solid var(--line); font-size: 0.95rem; }
 .brief .row:first-child { border-top: 0; padding-top: 0; }

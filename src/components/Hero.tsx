@@ -1,47 +1,30 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
 import Airlock from "./Airlock";
-
-// On wide screens the hatch sits right of centre (SVG x = 720 + HATCH_DX) so
-// the headline column never crosses the ring. styles.css mirrors the offset
-// through --hatch-dx for the sky view and the mascot.
-export const HATCH_DX = 150;
-
-function useWide() {
-  const [wide, setWide] = useState(() => (typeof window === "undefined" ? true : window.matchMedia("(min-width: 761px)").matches));
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 761px)");
-    const on = () => setWide(mq.matches);
-    mq.addEventListener("change", on);
-    return () => mq.removeEventListener("change", on);
-  }, []);
-  return wide;
-}
 import Countdown from "./Countdown";
 import { event } from "../data";
 
-// Scroll choreography (progress 0 to 1 over 260vh):
-//   0.00 to 0.30  inside the ship, copy and readout visible
-//   0.30 to 0.80  camera pushes through the hatch: porthole grows past the
-//                 viewport, bulkheads scale out and fade, copy lifts away
-//   0.80 to 1.00  only sky remains, then it hands off to the fixed backdrop
+// Scroll choreography (progress 0 to 1 over 260vh). Everything scales around
+// the hatch, which sits dead centre of the viewport.
+//   0.00 to 0.30  at rest: wordmark above the hatch, button below it
+//   0.30 to 0.80  push through the hatch: sky grows past the viewport,
+//                 bulkheads scale out and fade, copy lifts away
+//   0.50 to 0.92  "hatch open" line drifts through
+//   0.86 onward   fixed backdrop takes over
 export default function Hero() {
   const ref = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
-  const wide = useWide();
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
 
   const hullScale = useTransform(scrollYProgress, [0.3, 0.8], [1, 3.2]);
   const hullOpacity = useTransform(scrollYProgress, [0.55, 0.8], [1, 0]);
   const portScale = useTransform(scrollYProgress, [0.3, 0.8], [1, 4.5]);
   const portOpacity = useTransform(scrollYProgress, [0.66, 0.86], [1, 0]);
+  const topY = useTransform(scrollYProgress, [0.25, 0.5], [0, -60]);
+  const topOpacity = useTransform(scrollYProgress, [0.25, 0.42], [1, 0]);
+  const bottomY = useTransform(scrollYProgress, [0.25, 0.5], [0, 60]);
   const midOpacity = useTransform(scrollYProgress, [0.5, 0.62, 0.8, 0.92], [0, 1, 1, 0]);
   const midY = useTransform(scrollYProgress, [0.5, 0.92], [30, -30]);
-  const copyY = useTransform(scrollYProgress, [0.25, 0.5], [0, -80]);
-  const copyOpacity = useTransform(scrollYProgress, [0.25, 0.45], [1, 0]);
-  const mascotY = useTransform(scrollYProgress, [0.3, 0.7], [0, 240]);
-  const mascotOpacity = useTransform(scrollYProgress, [0.5, 0.7], [1, 0]);
-  const cueOpacity = useTransform(scrollYProgress, [0, 0.12], [1, 0]);
 
   const still = reduce ? { scale: 1, opacity: 1, y: 0 } : undefined;
 
@@ -50,55 +33,35 @@ export default function Hero() {
       <div className="pin">
         <div className="scene">
           <motion.div className="porthole-view" style={still ?? { scale: portScale, opacity: portOpacity }} aria-hidden="true">
-            <span className="cloud" style={{ width: "46%", height: "16%", left: "0%", top: "28%", animationDuration: "38s" }} />
-            <span className="cloud" style={{ width: "34%", height: "12%", left: "20%", top: "56%", animationDuration: "52s", animationDelay: "-20s" }} />
-            <span className="cloud" style={{ width: "28%", height: "10%", left: "-10%", top: "72%", animationDuration: "44s", animationDelay: "-9s" }} />
+            <span className="cloud" style={{ width: "46%", height: "16%", left: "0%", top: "26%", animationDuration: "38s" }} />
+            <span className="cloud" style={{ width: "34%", height: "12%", left: "20%", top: "58%", animationDuration: "52s", animationDelay: "-20s" }} />
+            <span className="cloud" style={{ width: "28%", height: "10%", left: "-10%", top: "74%", animationDuration: "44s", animationDelay: "-9s" }} />
+            <img className="mascot" src="/mascot.png" alt="" width={170} height={170} />
           </motion.div>
 
           <motion.div style={still ?? { scale: hullScale, opacity: hullOpacity, position: "absolute", inset: 0 }} aria-hidden="true">
-            <Airlock cx={720 + (wide ? HATCH_DX : 0)} />
+            <Airlock />
           </motion.div>
-
-          <motion.img
-            className="mascot"
-            src="/mascot.png"
-            alt=""
-            width={190}
-            height={190}
-            style={still ?? { y: mascotY, opacity: mascotOpacity }}
-          />
         </div>
 
-        <motion.div className="copy" style={still ?? { y: copyY, opacity: copyOpacity }}>
-          <div className="title">
-            <span className="eyebrow">Hacktoberfest 2026 · San Antonio</span>
-            <h1>
-              RowdyLaunch
-              <span>Hack Day at UTSA</span>
-            </h1>
-            <p>
-              Spend a Saturday at UTSA getting a pull request merged into an open-source project, with
-              organizers who have done it before sitting at the next table.
+        <div className="copy">
+          <motion.div className="top" style={still ?? { y: topY, opacity: topOpacity }}>
+            <h1>RowdyLaunch</h1>
+            <p className="when">
+              Hacktoberfest Hack Day · {event.dateLabel} · UTSA
             </p>
-            <div className="actions">
-              <a className="btn primary" href={event.registerUrl} target="_blank" rel="noopener">
-                Register on MLH
-              </a>
-              <a className="btn ghost" href="#mission">
-                How the day works
-              </a>
-            </div>
-          </div>
-          <Countdown />
-        </motion.div>
+          </motion.div>
+          <motion.div className="bottom" style={still ?? { y: bottomY, opacity: topOpacity }}>
+            <a className="btn primary lg" href={event.registerUrl} target="_blank" rel="noopener">
+              Register on MLH
+            </a>
+            <Countdown compact />
+          </motion.div>
+        </div>
 
         <motion.div className="midline" style={still ? { opacity: 0 } : { opacity: midOpacity, y: midY }} aria-hidden="true">
           <span>Hatch open</span>
           <h2>Seven hours to your first merged pull request.</h2>
-        </motion.div>
-
-        <motion.div className="scroll-cue" style={still ?? { opacity: cueOpacity }} aria-hidden="true">
-          Scroll to open the hatch
         </motion.div>
       </div>
     </section>

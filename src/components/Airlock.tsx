@@ -55,9 +55,9 @@ export default function Airlock({ cx = 720 }: { cx?: number }) {
       ))}
 
       {/* red indicator strips on the two upper wedges */}
-      {[-0.42, 0.42].map((t, i) => {
+      {[-0.5, 0.5].map((t, i) => {
         const a = -Math.PI / 2 + t;
-        const r = HATCH_R + 110;
+        const r = HATCH_R + 64;
         const x = CX + r * Math.cos(a);
         const y = CY + r * Math.sin(a);
         return (
@@ -89,9 +89,6 @@ export default function Airlock({ cx = 720 }: { cx?: number }) {
       <path d={`M ${CX - 110} ${CY + 150} L ${CX + 110} ${CY + 150} L ${CX + 400} 900 L ${CX - 400} 900 Z`} fill="url(#walk)" />
       <path d={`M ${CX - 55} ${CY + 150} L ${CX + 55} ${CY + 150} L ${CX + 190} 900 L ${CX - 190} 900 Z`} fill="rgba(255,255,255,0.03)" />
 
-      {/* hull markings */}
-      <text x={CX - 560} y="640" fontFamily="JetBrains Mono, monospace" fontSize="22" fill="rgba(242,238,249,0.3)" letterSpacing="4">RL-31</text>
-      <text x={CX + 400} y="640" fontFamily="JetBrains Mono, monospace" fontSize="22" fill="rgba(242,238,249,0.3)" letterSpacing="4">UTSA</text>
 
       <path d={`M-400 0H1840V900H-400Z ${holePath}`} fill="url(#vig)" fillRule="evenodd" />
     </svg>

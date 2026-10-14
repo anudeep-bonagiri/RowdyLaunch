@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { event, crew, flightPlan, faq } from "../data";
+import Countdown from "./Countdown";
 
 const rise = {
   initial: { opacity: 0, y: 24 },
@@ -41,14 +42,17 @@ export function Mission() {
               <li>Fix it, open the pull request and get it reviewed before you leave.</li>
             </ol>
           </div>
-          <dl className="panel rows">
+          <div className="facts">
+            <Countdown />
+            <dl className="panel rows">
             <div className="row"><dt>Date</dt><dd>{event.dateLabel}</dd></div>
             <div className="row"><dt>Window</dt><dd>{event.timeLabel}</dd></div>
             <div className="row"><dt>Location</dt><dd>{event.venue}<br />{event.address}</dd></div>
             <div className="row"><dt>Host</dt><dd>{event.host}, with Major League Hacking</dd></div>
             <div className="row"><dt>Who</dt><dd>University students and working professionals</dd></div>
             <div className="row"><dt>Bring</dt><dd>Laptop, charger, GitHub account</dd></div>
-          </dl>
+            </dl>
+          </div>
         </motion.div>
       </div>
     </section>

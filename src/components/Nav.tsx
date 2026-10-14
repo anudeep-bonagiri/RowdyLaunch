@@ -28,11 +28,6 @@ export default function Nav() {
         ))}
         <a className="btn primary sm cta" href={event.registerUrl} target="_blank" rel="noopener">Register</a>
       </nav>
-      <div className="toast" role="status">
-        <i aria-hidden="true" />
-        <span>Registration is open on MLH for {event.dateLabel}</span>
-        <a href={event.registerUrl} target="_blank" rel="noopener">Register →</a>
-      </div>
     </>
   );
 }

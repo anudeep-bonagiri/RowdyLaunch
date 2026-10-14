@@ -13,19 +13,33 @@ function parts(ms: number) {
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
-export default function Countdown() {
-  const start = new Date(event.startISO).getTime();
-  const end = new Date(event.endISO).getTime();
+function useClock() {
   const [now, setNow] = useState(() => Date.now());
-
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
+  return now;
+}
 
+const start = new Date(event.startISO).getTime();
+const end = new Date(event.endISO).getTime();
+
+// compact: one mono line for the hero. Otherwise the full readout panel.
+export default function Countdown({ compact = false }: { compact?: boolean }) {
+  const now = useClock();
   const live = now >= start && now < end;
   const over = now >= end;
   const t = parts(start - now);
+
+  if (compact) {
+    return (
+      <p className="tminus" role="timer" aria-live="off">
+        <i aria-hidden="true" />
+        {live ? "Mission in progress. Doors close at 5 PM." : over ? "Mission complete." : `T-minus ${t.d}d ${pad(t.h)}h ${pad(t.m)}m ${pad(t.s)}s`}
+      </p>
+    );
+  }
 
   return (
     <div className="readout" role="timer" aria-live="off">
