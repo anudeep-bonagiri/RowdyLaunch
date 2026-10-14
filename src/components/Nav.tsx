@@ -14,7 +14,7 @@ export default function Nav() {
   const phase = useEventPhase();
   return (
     <nav className="nav" aria-label="Site">
-      <a className="brand" href="#top"><i aria-hidden="true" />RowdyLaunch</a>
+      <a className="brand" href="#top"><img src="/logo.png" alt="" width={640} height={640} />RowdyLaunch</a>
       {items.map(([href, label]) => (
         <a key={href} className="item" href={href}>{label}</a>
       ))}

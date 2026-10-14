@@ -35,6 +35,6 @@ Design references, in priority order: the Octocat-at-the-airlock image in `~/Des
 ## Assets
 
 - `public/mascot.png` is the RowdyLaunch roadrunner: a founder in a hoodie sprinting on rocket boosters with a laptop bag. Generated with Gemini on 2026-10-14 from a RowdyLaunch prompt, background keyed out. Source files and two alternate directions (rocket rider, rocket mark) are in `~/Desktop/hacktoberfest/inspo/05-mascot`. Have it redrawn as a vector if it becomes the permanent org mascot.
-- `public/favicon.svg` is drawn in place. `public/og.png` is the link-preview image; regenerate it if the hero changes.
+- `public/logo.png` (nav mark) and the favicon and app icons are the rocket-rider roadrunner from the same Gemini set, cut out and placed on the ship gunmetal. `public/og.png` is the link-preview image; regenerate it if the hero changes.
 - Fonts are self-hosted in `public/fonts` (latin subsets of Unbounded, Sora and JetBrains Mono, OFL licensed).
 - No MLH trust badge: that asset is for MLH Member Events. The event is linked from the nav, the hero and the footer instead.

@@ -95,7 +95,9 @@ button { font: inherit; color: inherit; }
   max-width: calc(100vw - 32px);
 }
 .nav .brand { font-family: var(--display); font-weight: 900; font-size: 0.8rem; letter-spacing: 0.02em; margin-right: 10px; text-decoration: none; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
-.nav .brand i { width: 8px; height: 8px; border-radius: 50%; background: var(--red); box-shadow: 0 0 10px var(--red); }
+.nav .brand img { width: 28px; height: 28px; object-fit: contain; }
+.nav .brand, .nav .cta { flex: none; }
+.nav .brand { margin-right: 16px; }
 .nav a.item { text-decoration: none; font-size: 0.86rem; color: var(--fg-2); padding: 8px 12px; border-radius: 999px; white-space: nowrap; }
 .nav a.item:hover { color: var(--fg); background: rgba(255, 255, 255, 0.06); }
 .nav .cta { margin-left: 6px; white-space: nowrap; }
