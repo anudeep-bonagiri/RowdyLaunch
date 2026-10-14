@@ -19,6 +19,9 @@ Everything factual lives in `src/data.ts`: dates, venue, links, crew, schedule, 
 
 - The schedule is marked `draft: true`. Flip it once the agenda is confirmed and the "Draft schedule" badge disappears.
 - `contactEmail` is empty. Fill it in to show a sponsor contact button.
+- `sponsors` is empty. Add an entry with a logo under `public/sponsors/` and the logo grid appears.
+- `crew[].line` and `crew[].url` are optional. Add a year and major or a GitHub link per person.
+- `postEventUrl` is where the main button points after 5 PM on Oct 31.
 - The T-minus clock reads `startISO` and switches to "Mission in progress" during the event window.
 
 ## How it is built
@@ -31,6 +34,7 @@ Design references, in priority order: the Octocat-at-the-airlock image in `~/Des
 
 ## Assets
 
-- `public/mascot.png` is Jetpacktocat from GitHub's Octodex (https://octodex.github.com/). GitHub owns the Octocat. It is used here for a free, non-commercial Hacktoberfest community event with a credit in the footer. Swap it for original art if that ever changes.
-- `public/favicon.svg` is drawn in place.
-- Fonts come from Google Fonts: Unbounded (display), Sora (body), JetBrains Mono (readouts).
+- The mascot is an original astronaut roadrunner drawn in `src/components/Mascot.tsx`. No GitHub or UTSA artwork is used.
+- `public/favicon.svg` is drawn in place. `public/og.png` is the link-preview image; regenerate it if the hero changes.
+- Fonts are self-hosted in `public/fonts` (latin subsets of Unbounded, Sora and JetBrains Mono, OFL licensed).
+- No MLH trust badge: that asset is for MLH Member Events. The event is linked from the nav, the hero and the footer instead.

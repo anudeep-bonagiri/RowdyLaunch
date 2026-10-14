@@ -37,10 +37,6 @@ export default function Airlock({ cx = 720 }: { cx?: number }) {
           <stop offset="0%" stopColor="#2a2634" />
           <stop offset="100%" stopColor="#15121c" />
         </linearGradient>
-        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="6" result="b" />
-          <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
-        </filter>
       </defs>
 
       {/* hull base with a transparent hole where the hatch is, so the sky shows through */}
@@ -61,7 +57,8 @@ export default function Airlock({ cx = 720 }: { cx?: number }) {
         const x = CX + r * Math.cos(a);
         const y = CY + r * Math.sin(a);
         return (
-          <g key={i} transform={`translate(${x} ${y}) rotate(${(a * 180) / Math.PI + 90})`} filter="url(#glow)">
+          <g key={i} transform={`translate(${x} ${y}) rotate(${(a * 180) / Math.PI + 90})`}>
+            <rect x="-36" y="-12" width="72" height="24" rx="12" fill="#ff3b30" opacity="0.28" />
             <rect x="-26" y="-5" width="52" height="10" rx="5" fill="#ff3b30" />
           </g>
         );
@@ -71,7 +68,8 @@ export default function Airlock({ cx = 720 }: { cx?: number }) {
       {[-1, 1].map((s) => (
         <g key={s} transform={`translate(${CX + s * 470} ${CY + 70})`}>
           <rect x="-70" y="-26" width="140" height="52" rx="8" fill="#2a2634" />
-          <rect x="-58" y="-14" width="116" height="28" rx="6" fill="#f6f1e6" opacity="0.95" filter="url(#glow)" />
+          <rect x="-66" y="-20" width="132" height="40" rx="10" fill="#f6f1e6" opacity="0.18" />
+          <rect x="-58" y="-14" width="116" height="28" rx="6" fill="#f6f1e6" opacity="0.95" />
         </g>
       ))}
 

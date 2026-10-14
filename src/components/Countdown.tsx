@@ -13,6 +13,9 @@ function parts(ms: number) {
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
+const start = new Date(event.startISO).getTime();
+const end = new Date(event.endISO).getTime();
+
 function useClock() {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
@@ -22,8 +25,18 @@ function useClock() {
   return now;
 }
 
-const start = new Date(event.startISO).getTime();
-const end = new Date(event.endISO).getTime();
+export type Phase = "upcoming" | "live" | "over";
+
+// Cheap: checks once a minute, so callers do not re-render every second.
+export function useEventPhase(): Phase {
+  const calc = () => (Date.now() >= end ? "over" : Date.now() >= start ? "live" : "upcoming");
+  const [phase, setPhase] = useState<Phase>(calc);
+  useEffect(() => {
+    const id = setInterval(() => setPhase(calc()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+  return phase;
+}
 
 // compact: one mono line for the hero. Otherwise the full readout panel.
 export default function Countdown({ compact = false }: { compact?: boolean }) {
@@ -42,7 +55,7 @@ export default function Countdown({ compact = false }: { compact?: boolean }) {
   }
 
   return (
-    <div className="readout" role="timer" aria-live="off">
+    <div className="panel readout" role="timer" aria-live="off">
       <div className="lbl">
         <span>{live ? "Mission in progress" : over ? "Mission complete" : "T-minus"}</span>
         <i aria-hidden="true" />
