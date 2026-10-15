@@ -43,13 +43,7 @@ Registration lives on this site, not on MLH.
 
 ### Apple Wallet passes
 
-`api/pass.ts` is a Vercel function. `GET /api/pass` reports whether signing is configured; `POST /api/pass` with the attendee's access token in the form body verifies the token with Supabase, reads that person's registration under row-level security, and returns a signed `.pkpass` built by `lib/pass.ts` (artwork in `lib/passAssets.ts`, regenerated with `node scripts/pass-assets.mjs`). Apple only accepts passes signed with a Pass Type ID certificate, which needs a paid Apple Developer membership. To switch it on:
-
-1. In the Apple Developer portal, Certificates, Identifiers & Profiles, create a Pass Type ID such as `pass.com.rowdylaunch.hackday`, then create its certificate using a CSR from Keychain Access. Download it, add it to Keychain, and export certificate plus private key as a `.p12`.
-2. Download Apple's WWDR G4 certificate from https://www.apple.com/certificateauthority/AppleWWDRCAG4.cer.
-3. Run `scripts/wallet-env.sh pass.p12 AppleWWDRCAG4.cer pass.com.rowdylaunch.hackday <team id>`. It converts both to PEM and sets the five env vars on Vercel production without printing them. Redeploy.
-
-Until then the button stays hidden and the on-screen pass does the same job at the door.
+`api/pass.ts` is a Vercel function. `GET /api/pass` reports whether signing is configured; `POST /api/pass` with the attendee's access token in the form body verifies the token with Supabase, reads that person's registration under row-level security, and returns a signed `.pkpass` built by `lib/pass.ts` (artwork in `lib/passAssets.ts`, regenerated with `node scripts/pass-assets.mjs`). Apple only accepts passes signed with a Pass Type ID certificate. This is configured: the Pass Type ID `pass.com.rowdylaunch.hackday` and the certificate "RowdyLaunch Hack Day Pass 2026" (expires November 14, 2027) live in Anudeep's Apple Developer account (team 8878M838D7), and the five env vars are set on Vercel production. When the certificate expires, create a new one for the same Pass Type ID from a fresh CSR and run `scripts/wallet-env.sh` (or set the env vars by hand) with the new files. Vercel keeps the current key; `vercel env pull` retrieves it.
 
 The Supabase project is `rowdylaunch` (ref `sejafunjijjhszotyiht`) in the org RowdyLaunch, dashboard at https://supabase.com/dashboard/project/sejafunjijjhszotyiht. Schema and policies are in `supabase/migrations`; auth settings (site URL, redirect URLs, 8-character minimum password, one auth email a minute) are in `supabase/config.toml`. The portal is code-split, so the event page never loads the Supabase client. `vercel.json` rewrites `/register` and `/organizer` to the app.
 
