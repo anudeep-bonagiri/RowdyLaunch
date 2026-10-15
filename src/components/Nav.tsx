@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import { event } from "../data";
 import { useEventPhase } from "./Countdown";
+import { dbReady } from "../db";
 
+// RSVP only exists once the Supabase env vars are set (see src/db.ts).
 const items = [
   ["#mission", "Mission"],
   ["#flight-plan", "Flight plan"],
+  ["#manifest", "RSVP"],
   ["#crew", "Crew"],
   ["#ground-control", "Where"],
   ["#supplies", "Sponsors"],
@@ -40,7 +43,7 @@ export default function Nav() {
   return (
     <nav className="nav" aria-label="Site">
       <a className="brand" href="#top"><img src="/logo.png" alt="" width={640} height={640} />RowdyLaunch</a>
-      {items.map(([href, label]) => (
+      {items.filter(([href]) => href !== "#manifest" || dbReady).map(([href, label]) => (
         <a key={href} className="item" href={href}>{label}</a>
       ))}
       {phase === "over" ? (

@@ -32,6 +32,16 @@ The concept is the inside of a ship. The hero is a 260vh pinned scene: an SVG ai
 
 Design references, in priority order: the Octocat-at-the-airlock image in `~/Desktop/hacktoberfest/inspo`, and the hackathon site lookbook (LA Hacks for the pill nav and announcement toast, Hack the North for the backdrop that changes with the scroll, HackTX for turning the deadline into a prop).
 
+## Manifest form (Supabase)
+
+The RSVP section (`src/components/Rsvp.tsx`) collects name, email, phone, dietary restrictions, an optional extra-credit class and a liability checkbox. It writes one row to the `rsvps` table in Supabase through PostgREST (`src/db.ts`, no SDK). The section and its nav item only render when both env vars are set, so the site works without a backend.
+
+1. Create a Supabase project and run `supabase/migrations/20261014000000_rsvps.sql` in the SQL editor (or `supabase db push`). It creates the table, a unique index on lowercased email, and an insert-only policy for the anon role. Nothing can read the table through the API; organizers read it in the dashboard.
+2. Copy `.env.example` to `.env.local` and fill in the project URL and publishable key from Project Settings, API.
+3. Add the same two variables to the Vercel project (Settings, Environment Variables) and redeploy.
+
+The form hides itself once the event is over. Export the table to CSV for the food order, then delete the rows after the event; there is no reason to keep phone numbers.
+
 ## Assets
 
 - `public/mascot.png` is the RowdyLaunch roadrunner: a founder in a hoodie sprinting on rocket boosters with a laptop bag. Generated with Gemini on 2026-10-14 from a RowdyLaunch prompt, background keyed out. Source files and two alternate directions (rocket rider, rocket mark) are in `~/Desktop/hacktoberfest/inspo/05-mascot`. Have it redrawn as a vector if it becomes the permanent org mascot.

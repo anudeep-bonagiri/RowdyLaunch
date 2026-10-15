@@ -3,14 +3,14 @@ import { m } from "framer-motion";
 import { event, crew, flightPlan, faq, sponsors } from "../data";
 import Countdown from "./Countdown";
 
-const rise = {
+export const rise = {
   initial: { opacity: 0, y: 24 },
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true, margin: "-80px" },
   transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const },
 };
 
-function Head({ eyebrow, title, blurb, tag }: { eyebrow: string; title: string; blurb?: string; tag?: ReactNode }) {
+export function Head({ eyebrow, title, blurb, tag }: { eyebrow: string; title: string; blurb?: string; tag?: ReactNode }) {
   return (
     <m.div className="head" {...rise}>
       <span className="eyebrow">{eyebrow}</span>

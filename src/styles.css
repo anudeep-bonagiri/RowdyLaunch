@@ -298,3 +298,23 @@ footer a { color: var(--fg); text-decoration: none; }
 footer a:hover { text-decoration: underline; }
 footer .links { display: flex; flex-wrap: wrap; gap: 6px 18px; }
 footer .fine { color: var(--fg-3); font-size: 0.78rem; max-width: 70ch; }
+
+/* Manifest (RSVP) form */
+.rsvp { display: grid; gap: 16px; max-width: 760px; }
+.rsvp form { display: grid; gap: 18px; }
+.rsvp .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; }
+.rsvp .full { grid-column: 1 / -1; }
+.rsvp .field { display: grid; gap: 6px; min-width: 0; }
+.rsvp .field span { font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fg-3); }
+.rsvp input:not([type="checkbox"]) { width: 100%; font: inherit; font-size: 0.96rem; color: var(--fg); background: rgba(255, 255, 255, 0.04); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; outline: none; }
+.rsvp input::placeholder { color: var(--fg-3); }
+.rsvp input:not([type="checkbox"]):focus-visible { border-color: var(--sky); box-shadow: 0 0 0 3px rgba(154, 211, 234, 0.25); }
+.rsvp .agree { display: flex; gap: 12px; align-items: flex-start; font-size: 0.88rem; color: var(--fg-2); line-height: 1.5; cursor: pointer; }
+.rsvp .agree input { margin-top: 3px; width: 18px; height: 18px; flex: none; accent-color: var(--orange); }
+.rsvp .agree a { color: var(--fg); }
+.rsvp .foot { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.rsvp .foot small { color: var(--fg-3); font-size: 0.78rem; }
+.rsvp .btn:disabled { opacity: 0.7; cursor: wait; transform: none; box-shadow: none; }
+.rsvp .note { color: var(--fg-2); }
+.rsvp .note.bad { color: #ffb4ad; }
+@media (max-width: 760px) { .rsvp .grid { grid-template-columns: 1fr; } }
