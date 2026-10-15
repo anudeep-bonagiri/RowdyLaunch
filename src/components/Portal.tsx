@@ -12,7 +12,7 @@ type Reg = {
   extra_credit_class: string | null;
   created_at: string;
 };
-type Mode = "signin" | "signup" | "forgot" | "reset";
+type Mode = "apply" | "login" | "forgot" | "reset";
 
 const str = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
 const when = (iso: string) => new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
@@ -28,7 +28,9 @@ function friendly(msg: string) {
 
 export default function Portal() {
   const [session, setSession] = useState<Session | null | undefined>(configured ? undefined : null);
-  const [mode, setMode] = useState<Mode>(() => (new URLSearchParams(location.search).has("reset") ? "reset" : "signin"));
+  const [mode, setMode] = useState<Mode>(() => (new URLSearchParams(location.search).has("reset") ? "reset" : "apply"));
+  const [applying, setApplying] = useState(false);
+  const [applied, setApplied] = useState<Reg | null>(null);
 
   useEffect(() => {
     if (!configured) return;
@@ -61,12 +63,12 @@ export default function Portal() {
         ) : session === undefined ? (
           <p className="muted">Loading</p>
         ) : mode === "reset" ? (
-          session ? <ResetPassword onDone={() => { setMode("signin"); history.replaceState(null, "", "/register"); }} />
-                  : <Auth mode="signin" setMode={setMode} notice="That reset link has expired. Request a new one below." />
-        ) : !session ? (
-          <Auth mode={mode} setMode={setMode} />
+          session ? <ResetPassword onDone={() => { setMode("login"); history.replaceState(null, "", "/register"); }} />
+                  : <Auth mode="login" setMode={setMode} notice="That reset link has expired. Request a new one below." onApplying={setApplying} onApplied={setApplied} />
+        ) : !session || applying ? (
+          <Auth mode={mode} setMode={setMode} onApplying={setApplying} onApplied={setApplied} />
         ) : (
-          <Dashboard session={session} organizer={organizer} />
+          <Dashboard session={session} organizer={organizer} seed={applied} />
         )}
       </main>
       <footer>
@@ -88,30 +90,66 @@ function Head({ title, blurb }: { title: string; blurb?: string }) {
   );
 }
 
-function Auth({ mode, setMode, notice }: { mode: Mode; setMode: (m: Mode) => void; notice?: string }) {
+type AuthProps = { mode: Mode; setMode: (m: Mode) => void; notice?: string; onApplying: (b: boolean) => void; onApplied: (r: Reg) => void };
+
+function Auth({ mode, setMode, notice, onApplying, onApplied }: AuthProps) {
   const [busy, setBusy] = useState(false);
+  const [email, setEmail] = useState("");
   const [msg, setMsg] = useState<{ text: string; bad?: boolean } | null>(notice ? { text: notice, bad: true } : null);
   const phase = useEventPhase();
+  const closed = phase === "over";
 
   const go = (m: Mode) => { setMode(m); setMsg(null); };
 
-  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  // One screen: the registration details and a password. The account is
+  // created first, then the registration row; if the row fails the person is
+  // signed in and the dashboard shows the form again with an error.
+  const onApply = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
-    const email = str(f, "email").toLowerCase();
+    const addr = str(f, "email").toLowerCase();
     const password = String(f.get("password") ?? "");
+    const details = {
+      name: str(f, "name"),
+      phone: str(f, "phone"),
+      dietary: str(f, "dietary") || null,
+      extra_credit_class: str(f, "cls") || null,
+      agreed: f.get("agreed") === "on",
+    };
+    setEmail(addr);
+    setBusy(true); setMsg(null); onApplying(true);
+    try {
+      const { data, error } = await supabase.auth.signUp({ email: addr, password });
+      if (error) throw error;
+      if (!data.session) { setMsg({ text: "Check your email for a confirmation link, then log in." }); return; }
+      const { data: row, error: regErr } = await supabase.from("registrations")
+        .upsert({ user_id: data.session.user.id, email: addr, ...details }, { onConflict: "user_id" })
+        .select("email,name,phone,dietary,extra_credit_class,created_at").single();
+      if (regErr) throw regErr;
+      onApplied(row as Reg);
+    } catch (x) {
+      const text = friendly(x instanceof Error ? x.message : "Something went wrong.");
+      setMsg({ text, bad: true });
+      if (/already has an account/.test(text)) setMode("login");
+    } finally {
+      setBusy(false); onApplying(false);
+    }
+  };
+
+  const onLogin = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const f = new FormData(e.currentTarget);
+    const addr = str(f, "email").toLowerCase();
+    const password = String(f.get("password") ?? "");
+    setEmail(addr);
     setBusy(true); setMsg(null);
     try {
-      if (mode === "signup") {
-        const { data, error } = await supabase.auth.signUp({ email, password });
-        if (error) throw error;
-        if (!data.session) setMsg({ text: "Check your email for a confirmation link, then sign in." });
-      } else if (mode === "forgot") {
-        const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${location.origin}/register?reset=1` });
+      if (mode === "forgot") {
+        const { error } = await supabase.auth.resetPasswordForEmail(addr, { redirectTo: `${location.origin}/register?reset=1` });
         if (error) throw error;
         setMsg({ text: "If that email has an account, a reset link is on its way." });
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({ email: addr, password });
         if (error) throw error;
       }
     } catch (x) {
@@ -121,43 +159,88 @@ function Auth({ mode, setMode, notice }: { mode: Mode; setMode: (m: Mode) => voi
     }
   };
 
+  const note = msg && <p className={`note${msg.bad ? " bad" : ""}`} role={msg.bad ? "alert" : "status"}>{msg.text}</p>;
+
+  if (mode === "apply" && !closed) {
+    return (
+      <>
+        <Head title="Register for the hack day" blurb={`${event.dateLabel}, ${event.timeLabel}, ${event.venue}. Free. One form, about a minute.`} />
+        <form key="apply" className="panel form" onSubmit={onApply}>
+          <div className="grid">
+            <label className="field">
+              <span>Name *</span>
+              <input type="text" name="name" required maxLength={120} autoComplete="name" />
+            </label>
+            <label className="field">
+              <span>Email *</span>
+              <input type="email" name="email" required maxLength={254} autoComplete="email" defaultValue={email} />
+            </label>
+            <label className="field">
+              <span>Phone *</span>
+              <input type="tel" name="phone" required minLength={7} maxLength={30} autoComplete="tel" />
+            </label>
+            <label className="field">
+              <span>Extra credit class (optional)</span>
+              <input type="text" name="cls" maxLength={120} placeholder="Course and professor" />
+            </label>
+            <label className="field full">
+              <span>Dietary restrictions (optional)</span>
+              <input type="text" name="dietary" maxLength={300} placeholder="Vegetarian, halal, nut allergy, none" />
+            </label>
+            <label className="agree full">
+              <input type="checkbox" name="agreed" required />
+              <span>
+                I release RowdyLaunch, the organizers, UTSA as the venue and the event sponsors from liability for personal
+                injury or property damage during the event, and I will follow the{" "}
+                <a href={event.codeOfConductUrl} target="_blank" rel="noopener">MLH Code of Conduct</a>. *
+              </span>
+            </label>
+            <label className="field full">
+              <span>Last thing: choose a password (8+ characters) *</span>
+              <input type="password" name="password" required minLength={8} maxLength={72} autoComplete="new-password" />
+            </label>
+          </div>
+          <div className="foot">
+            <button className="btn primary" type="submit" disabled={busy}>{busy ? "Registering" : "Register"}</button>
+            <button className="btn ghost sm" type="button" onClick={() => go("login")}>Already registered? Log in</button>
+          </div>
+          {note}
+          <small className="muted">Only the organizers see this. You can log in later to change it.</small>
+        </form>
+      </>
+    );
+  }
+
   return (
     <>
       <Head
-        title={phase === "over" ? "The hack day has wrapped" : "Register for the hack day"}
-        blurb={phase === "over" ? "Registration is closed. Sign in to see your details." : `${event.dateLabel}, ${event.timeLabel}, ${event.venue}. Free. Create an account, then fill in a short form.`}
+        title={closed ? "The hack day has wrapped" : mode === "forgot" ? "Reset your password" : "Log in"}
+        blurb={closed ? "Registration is closed. Log in to see your details." : mode === "forgot" ? "We email you a link to set a new password." : "See or update your registration."}
       />
-      <div className="panel">
-        <div className="authtabs" role="tablist" aria-label="Sign in or create account">
-          <button role="tab" type="button" aria-selected={mode === "signin"} onClick={() => go("signin")}>Sign in</button>
-          <button role="tab" type="button" aria-selected={mode === "signup"} onClick={() => go("signup")} disabled={phase === "over"}>Create account</button>
-        </div>
-        <form className="form" onSubmit={onSubmit}>
-          <div className="grid">
+      <form key={mode} className="panel form" onSubmit={onLogin}>
+        <div className="grid">
+          <label className="field full">
+            <span>Email</span>
+            <input type="email" name="email" required maxLength={254} autoComplete="email" defaultValue={email} />
+          </label>
+          {mode !== "forgot" && (
             <label className="field full">
-              <span>Email</span>
-              <input type="email" name="email" required maxLength={254} autoComplete="email" />
+              <span>Password</span>
+              <input type="password" name="password" required maxLength={72} autoComplete="current-password" />
             </label>
-            {mode !== "forgot" && (
-              <label className="field full">
-                <span>Password{mode === "signup" ? " (8+ characters)" : ""}</span>
-                <input type="password" name="password" required minLength={8} maxLength={72} autoComplete={mode === "signup" ? "new-password" : "current-password"} />
-              </label>
-            )}
-          </div>
-          <div className="foot">
-            <button className="btn primary" type="submit" disabled={busy}>
-              {busy ? "One moment" : mode === "signup" ? "Create account" : mode === "forgot" ? "Send reset link" : "Sign in"}
-            </button>
-            {mode === "forgot" ? (
-              <button type="button" className="link" onClick={() => go("signin")}>Back to sign in</button>
-            ) : (
-              <button type="button" className="link" onClick={() => go("forgot")}>Forgot password?</button>
-            )}
-          </div>
-          {msg && <p className={`note${msg.bad ? " bad" : ""}`} role={msg.bad ? "alert" : "status"}>{msg.text}</p>}
-        </form>
-      </div>
+          )}
+        </div>
+        <div className="foot">
+          <button className="btn primary" type="submit" disabled={busy}>{busy ? "One moment" : mode === "forgot" ? "Send reset link" : "Log in"}</button>
+          {mode === "forgot" ? (
+            <button type="button" className="link" onClick={() => go("login")}>Back to log in</button>
+          ) : (
+            <button type="button" className="link" onClick={() => go("forgot")}>Forgot password?</button>
+          )}
+          {!closed && <button type="button" className="link" onClick={() => go("apply")}>New here? Register</button>}
+        </div>
+        {note}
+      </form>
     </>
   );
 }
@@ -189,15 +272,16 @@ function ResetPassword({ onDone }: { onDone: () => void }) {
   );
 }
 
-function Dashboard({ session, organizer }: { session: Session; organizer: boolean }) {
+function Dashboard({ session, organizer, seed }: { session: Session; organizer: boolean; seed: Reg | null }) {
   const phase = useEventPhase();
-  const [reg, setReg] = useState<Reg | null | undefined>(undefined);
+  const [reg, setReg] = useState<Reg | null | undefined>(seed ?? undefined);
   const [editing, setEditing] = useState(false);
 
   useEffect(() => {
+    if (seed) return;
     supabase.from("registrations").select("email,name,phone,dietary,extra_credit_class,created_at").eq("user_id", session.user.id).maybeSingle()
       .then(({ data }) => setReg((data as Reg | null) ?? null));
-  }, [session.user.id]);
+  }, [session.user.id, seed]);
 
   const email = session.user.email ?? "";
   return (
@@ -213,7 +297,7 @@ function Dashboard({ session, organizer }: { session: Session; organizer: boolea
         <Head title="Registration is closed" blurb="The hack day has wrapped. Thanks for your interest." />
       ) : (
         <>
-          <Head title={reg ? "Update your details" : "One short form"} blurb={reg ? undefined : "This tells us how much food to order, what you can eat, and who to reach if plans change."} />
+          <Head title={reg ? "Update your details" : "Finish your registration"} blurb={reg ? undefined : "Your account exists but the details did not save. Fill them in once more."} />
           <RegForm email={email} userId={session.user.id} initial={reg} onSaved={(r) => { setReg(r); setEditing(false); }} onCancel={reg ? () => setEditing(false) : undefined} />
         </>
       )}

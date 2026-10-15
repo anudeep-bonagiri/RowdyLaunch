@@ -124,8 +124,10 @@ export function GroundControl() {
             </div>
           </div>
           <a className="map" href={event.mapsUrl} target="_blank" rel="noopener" aria-label="Open the venue in Google Maps">
-            <span className="tag">UTSA Main Campus · 29.58° N, 98.62° W</span>
+            <img src="/map.jpg" alt="" width={1000} height={640} loading="lazy" />
+            <span className="tag">UTSA Main Campus · 29.585° N, 98.618° W</span>
             <span className="pin"><i aria-hidden="true" /><span>Business Building</span></span>
+            <span className="credit">Map © OpenStreetMap contributors</span>
             <span className="open">Open in Maps ↗</span>
           </a>
         </m.div>

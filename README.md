@@ -34,7 +34,9 @@ Design references, in priority order: the Octocat-at-the-airlock image in `~/Des
 
 ## Registration portal (Supabase)
 
-Registration lives on this site at `/register` (`src/components/Portal.tsx`), not on MLH. Supabase Auth handles accounts with email and password; email confirmation is off so the free tier's email limit cannot block signups. After signing in, attendees fill one form (name, phone, dietary restrictions, optional extra-credit class, liability checkbox) that writes their row in `registrations`. They see a boarding pass with their details and can edit them until the event ends. Anyone whose email is in the `organizers` table sees the full roster on the same page with a CSV download.
+Registration lives on this site at `/register` (`src/components/Portal.tsx`), not on MLH. It is one screen: name, email, phone, dietary restrictions, optional extra-credit class, the liability checkbox, and a password chosen at the end. Submitting creates the Supabase Auth account and the `registrations` row in one go. Email confirmation is off so the free tier's email limit cannot block signups. Returning attendees use the "Already registered? Log in" button to see a boarding pass with their details and edit them until the event ends. Anyone whose email is in the `organizers` table sees the full roster on the same page with a CSV download.
+
+The map in Ground control is a static render (`public/map.jpg`) of OpenStreetMap tiles around the Business Building, darkened to match the site. Re-render it if the venue changes; the attribution line on it is required by OpenStreetMap's licence.
 
 The Supabase project is `rowdylaunch` (ref `sejafunjijjhszotyiht`) in the org RowdyLaunch, dashboard at https://supabase.com/dashboard/project/sejafunjijjhszotyiht. Schema and policies are in `supabase/migrations`; auth settings (site URL, redirect URLs, 8-character minimum password) are in `supabase/config.toml`. The portal is code-split, so the event page never loads the Supabase client. `vercel.json` rewrites `/register` to the app.
 
