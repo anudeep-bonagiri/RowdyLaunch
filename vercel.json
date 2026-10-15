@@ -1,3 +1,6 @@
 {
-  "rewrites": [{ "source": "/register", "destination": "/index.html" }]
+  "rewrites": [
+    { "source": "/register", "destination": "/index.html" },
+    { "source": "/organizer", "destination": "/index.html" }
+  ]
 }
