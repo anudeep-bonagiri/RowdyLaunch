@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import type { Session } from "@supabase/supabase-js";
 import QRCode from "qrcode";
 import { supabase, configured } from "../supabase";
@@ -7,6 +7,7 @@ import Countdown, { useEventPhase } from "./Countdown";
 
 export type Reg = {
   user_id: string;
+  ticket: string;
   email: string;
   name: string;
   phone: string;
@@ -19,13 +20,13 @@ type Mode = "apply" | "login" | "forgot" | "reset";
 type View = "attendee" | "organizer";
 type Msg = { text: string; bad?: boolean } | null;
 
-const REG_COLS = "user_id,email,name,phone,dietary,extra_credit_class,created_at,checked_in_at";
+const REG_COLS = "user_id,ticket,email,name,phone,dietary,extra_credit_class,created_at,checked_in_at";
 const str = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
 const when = (iso: string) => new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 const clock = (iso: string) => new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-// Six characters of the user id: the ticket code on the boarding pass and
-// the thing organizers type (or scan) at the door.
-export const ticketOf = (id: string) => id.replace(/-/g, "").slice(0, 6).toUpperCase();
+export const formatTicket = (t: string) => (t.length === 8 ? `${t.slice(0, 4)}-${t.slice(4)}` : t);
+const normTicket = (s: string) => s.replace(/[^a-z0-9]/gi, "").toUpperCase();
+const isApple = () => /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent);
 
 function friendly(msg: string) {
   if (/invalid login credentials/i.test(msg)) return "Wrong email or password.";
@@ -36,6 +37,8 @@ function friendly(msg: string) {
   if (/row-level security|permission denied/i.test(msg)) return "You do not have access to do that.";
   return msg;
 }
+
+/* ---------- shell ---------- */
 
 export default function Portal({ view }: { view: View }) {
   const [session, setSession] = useState<Session | null | undefined>(configured ? undefined : null);
@@ -57,7 +60,7 @@ export default function Portal({ view }: { view: View }) {
   }, []);
 
   useEffect(() => {
-    document.title = `${view === "organizer" ? "Organizers" : "Register"} | RowdyLaunch Hacktoberfest Hack Day`;
+    document.title = `${view === "organizer" ? "Mission control" : "Boarding"} | RowdyLaunch Hacktoberfest Hack Day`;
   }, [view]);
 
   useEffect(() => {
@@ -66,19 +69,24 @@ export default function Portal({ view }: { view: View }) {
   }, [session?.user.id]);
 
   const signedIn = Boolean(session) && !applying;
+  const narrow = !signedIn && mode !== "apply";
 
   return (
     <div className="portal">
-      <div className="backdrop" aria-hidden="true"><div className="space" style={{ opacity: 1 }} /><div className="stars" style={{ opacity: 1 }} /></div>
+      <div className="backdrop" aria-hidden="true"><div className="space" style={{ opacity: 1 }} /><div className="stars" style={{ opacity: 1 }} /><div className="stars-2" style={{ opacity: 1 }} /></div>
       <header className="portal-top">
-        <a className="brand" href="/"><img src="/logo.png" alt="" width={640} height={640} />RowdyLaunch</a>
-        <div className="portal-links">
-          {signedIn && view === "attendee" && organizer && <a className="btn ghost sm" href="/organizer">Organizer dashboard</a>}
-          {signedIn && view === "organizer" && <a className="btn ghost sm" href="/register">My boarding pass</a>}
-          {signedIn && <button className="btn ghost sm" type="button" onClick={() => supabase.auth.signOut()}>Sign out</button>}
-        </div>
+        <nav className="pbar" aria-label="Portal">
+          <a className="brand" href="/"><img src="/logo.png" alt="" width={640} height={640} />RowdyLaunch</a>
+          <span className="event">Hacktoberfest Hack Day · Oct 31 · UTSA</span>
+          <div className="links">
+            {!signedIn && <a href="/">Event page</a>}
+            {signedIn && view === "attendee" && organizer && <a href="/organizer">Mission control</a>}
+            {signedIn && view === "organizer" && <a href="/register">My pass</a>}
+            {signedIn && <button type="button" onClick={() => supabase.auth.signOut()}>Sign out</button>}
+          </div>
+        </nav>
       </header>
-      <main className={`portal-main${signedIn ? " wide" : ""}`}>
+      <main className={`portal-main${narrow ? " narrow" : ""}`}>
         {!configured ? (
           <Head title="Registration opens soon" blurb="The organizers have not switched registration on yet. Check back shortly." />
         ) : session === undefined ? (
@@ -91,7 +99,7 @@ export default function Portal({ view }: { view: View }) {
         ) : view === "organizer" ? (
           organizer === undefined ? <p className="muted">Loading</p>
           : organizer ? <OrganizerDashboard session={session} />
-          : <Head title="Organizers only" blurb="This account is not on the organizer list. Ask an organizer to add your email, then reload. Your own boarding pass is at /register." />
+          : <Head eyebrow="Mission control" title="Organizers only" blurb="This account is not on the organizer list. Ask an organizer to add your email, then reload. Your own boarding pass is at /register." />
         ) : (
           <Dashboard session={session} seed={applied} />
         )}
@@ -105,12 +113,15 @@ export default function Portal({ view }: { view: View }) {
   );
 }
 
-function Head({ title, blurb, eyebrow = "Boarding" }: { title: string; blurb?: string; eyebrow?: string }) {
+function Head({ title, blurb, eyebrow = "Boarding", aside }: { title: string; blurb?: string; eyebrow?: string; aside?: React.ReactNode }) {
   return (
     <div className="head">
-      <span className="eyebrow">{eyebrow}</span>
-      <h1>{title}</h1>
-      {blurb && <p>{blurb}</p>}
+      <div>
+        <span className="eyebrow">{eyebrow}</span>
+        <h1>{title}</h1>
+        {blurb && <p>{blurb}</p>}
+      </div>
+      {aside}
     </div>
   );
 }
@@ -132,6 +143,8 @@ function Terms({ open }: { open: boolean }) {
     </details>
   );
 }
+
+/* ---------- sign up / sign in ---------- */
 
 type AuthProps = { mode: Mode; setMode: (m: Mode) => void; notice?: string; onApplying: (b: boolean) => void; onApplied: (r: Reg) => void };
 
@@ -205,8 +218,20 @@ function Auth({ mode, setMode, notice, onApplying, onApplied }: AuthProps) {
 
   if (mode === "apply" && !closed) {
     return (
-      <>
-        <Head title="Register for the hack day" blurb={`${event.dateLabel}, ${event.timeLabel}, ${event.venue}. Free. One form, about a minute.`} />
+      <div className="apply">
+        <aside className="apply-side">
+          <img className="side-mascot" src="/mascot.png" alt="" width={960} height={614} />
+          <span className="eyebrow">Boarding</span>
+          <h1>Register for the hack day</h1>
+          <p>One form, about a minute. Free for students and working professionals.</p>
+          <ul className="perks">
+            <li><b>{event.dateLabel}</b><span>{event.timeLabel}</span></li>
+            <li><b>{event.venue}</b><span>{event.address}</span></li>
+            <li><b>Lunch and snacks</b><span>On us. Tell us what you can eat.</span></li>
+            <li><b>Mentors all day</b><span>Open your first pull request with people who have done it before.</span></li>
+            <li><b>Hacktoberfest swag and prizes</b><span>While they last.</span></li>
+          </ul>
+        </aside>
         <form key="apply" className="panel form" onSubmit={onApply}>
           <div className="grid">
             <label className="field">
@@ -246,7 +271,7 @@ function Auth({ mode, setMode, notice, onApplying, onApplied }: AuthProps) {
           <Note msg={msg} />
           <small className="muted">Only the organizers see this. You can log in later to change it.</small>
         </form>
-      </>
+      </div>
     );
   }
 
@@ -254,7 +279,7 @@ function Auth({ mode, setMode, notice, onApplying, onApplied }: AuthProps) {
     <>
       <Head
         title={closed ? "The hack day has wrapped" : mode === "forgot" ? "Reset your password" : "Log in"}
-        blurb={closed ? "Registration is closed. Log in to see your details." : mode === "forgot" ? "We email you a link to set a new password." : "See your boarding pass or update your details."}
+        blurb={closed ? "Registration is closed. Log in to see your details." : mode === "forgot" ? "We email you a link to set a new password." : "Your boarding pass, checklist and details."}
       />
       <form key={mode} className="panel form" onSubmit={onLogin}>
         <div className="grid">
@@ -313,10 +338,24 @@ function ResetPassword({ onDone }: { onDone: () => void }) {
 
 /* ---------- attendee dashboard ---------- */
 
+const walletMessages: Record<string, string> = {
+  notsetup: "Wallet passes are not switched on yet. Your pass on this page works the same at the door.",
+  nosession: "Your session had expired. You are signed in again now, so try Add to Apple Wallet once more.",
+  noreg: "No registration was found for this account.",
+  failed: "The pass could not be built. Tell an organizer; the pass on this page still works.",
+};
+
 function Dashboard({ session, seed }: { session: Session; seed: Reg | null }) {
   const phase = useEventPhase();
   const [reg, setReg] = useState<Reg | null | undefined>(seed ?? undefined);
   const [editing, setEditing] = useState(false);
+  const [wallet, setWallet] = useState(false);
+  const [walletMsg] = useState<Msg>(() => {
+    const code = new URLSearchParams(location.search).get("wallet");
+    if (!code) return null;
+    history.replaceState(null, "", location.pathname);
+    return { text: walletMessages[code] ?? "Something went wrong with the Wallet pass.", bad: code !== "notsetup" };
+  });
 
   const load = () =>
     supabase.from("registrations").select(REG_COLS).eq("user_id", session.user.id).maybeSingle()
@@ -330,6 +369,14 @@ function Dashboard({ session, seed }: { session: Session; seed: Reg | null }) {
     document.addEventListener("visibilitychange", onVis);
     return () => { clearInterval(id); document.removeEventListener("visibilitychange", onVis); };
   }, [session.user.id]);
+
+  useEffect(() => {
+    if (!isApple()) return;
+    fetch("/api/pass", { headers: { Accept: "application/json" } })
+      .then((r) => (r.ok ? r.json() : { configured: false }))
+      .then((j: { configured?: boolean }) => setWallet(Boolean(j.configured)))
+      .catch(() => setWallet(false));
+  }, []);
 
   const email = session.user.email ?? "";
   if (reg === undefined) return <p className="muted">Loading your details</p>;
@@ -356,10 +403,14 @@ function Dashboard({ session, seed }: { session: Session; seed: Reg | null }) {
   return (
     <>
       <Head title={title} blurb={blurb} />
+      <Note msg={walletMsg} />
+      <div className="deck">
+        <BoardingPass reg={reg} wallet={wallet} />
+        <Countdown />
+      </div>
       <div className="dash">
-        <Ticket reg={reg} />
         <section className="panel card" aria-label="Before launch">
-          <span className="eyebrow">Before launch</span>
+          <div className="bar"><span className="eyebrow">Before launch</span><span className="muted">{(reg.checked_in_at ? 2 : 1)} of 5 done</span></div>
           <ol className="check">
             <li data-done="true"><b>Registered</b><span>Done {when(reg.created_at)}.</span></li>
             <li><b>Git installed, GitHub ready</b><span><a href="https://git-scm.com/downloads" target="_blank" rel="noopener">Install Git</a> and sign in to <a href="https://github.com" target="_blank" rel="noopener">GitHub</a> on the laptop you are bringing.</span></li>
@@ -395,33 +446,69 @@ function Dashboard({ session, seed }: { session: Session; seed: Reg | null }) {
   );
 }
 
-function Ticket({ reg }: { reg: Reg }) {
-  const code = ticketOf(reg.user_id);
+function WalletGlyph() {
+  return (
+    <svg viewBox="0 0 24 20" aria-hidden="true" focusable="false">
+      <rect x="1" y="1" width="22" height="18" rx="3" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M1 7h22" stroke="currentColor" strokeWidth="1.6" />
+      <rect x="14" y="10" width="7" height="4" rx="1" fill="currentColor" />
+    </svg>
+  );
+}
+
+function BoardingPass({ reg, wallet }: { reg: Reg; wallet: boolean }) {
   const [qr, setQr] = useState("");
+  const tokenRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     // The QR is a link to the organizer dashboard with the code filled in,
     // so any phone camera turns into a scanner.
-    QRCode.toDataURL(`${location.origin}/organizer?code=${code}`, { margin: 1, width: 360, color: { dark: "#1a1722", light: "#f2eef9" } })
+    QRCode.toDataURL(`${location.origin}/organizer?code=${reg.ticket}`, { margin: 1, width: 360, color: { dark: "#1a1722", light: "#f2eef9" } })
       .then(setQr).catch(() => setQr(""));
-  }, [code]);
+  }, [reg.ticket]);
+
+  // Fresh access token at click time; the function verifies it server-side.
+  const onWallet = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const { data } = await supabase.auth.getSession();
+    if (!data.session || !tokenRef.current) return;
+    tokenRef.current.value = data.session.access_token;
+    form.submit();
+  };
+
   return (
-    <section className="panel pass ticket" aria-label="Boarding pass">
-      <div className="who">
-        <div><span className="eyebrow">Boarding pass</span><div className="name">{reg.name}</div></div>
-        <span className={`chip${reg.checked_in_at ? " ok" : ""}`}>{reg.checked_in_at ? "Checked in" : "Registered"}</span>
-      </div>
-      <div className="qrwrap">
-        {qr ? <img src={qr} alt={`Check-in code ${code}`} width={150} height={150} /> : <div className="qrph" aria-hidden="true" />}
-        <div>
-          <div className="code" aria-label="Ticket code">{code}</div>
-          <p className="muted">Show this at the door. An organizer scans it or types the code.</p>
+    <section className="bpass" aria-label="Boarding pass">
+      <div className="band"><span>RowdyLaunch · Hacktoberfest Hack Day</span><span>Boarding pass</span></div>
+      <div className="main">
+        <dl className="fields">
+          <div className="f big"><dt>Passenger</dt><dd>{reg.name}</dd></div>
+          <div className="f"><dt>Flight</dt><dd>RL-1031</dd></div>
+          <div className="f"><dt>Date</dt><dd>Sat, Oct 31</dd></div>
+          <div className="f"><dt>Doors</dt><dd>10:00 AM</dd></div>
+          <div className="f"><dt>Gate</dt><dd>Business Building</dd></div>
+          <div className="f"><dt>Seat</dt><dd>Open source</dd></div>
+          <div className="f"><dt>Status</dt><dd><span className={`chip${reg.checked_in_at ? " ok" : ""}`}>{reg.checked_in_at ? "Checked in" : "Registered"}</span></dd></div>
+        </dl>
+        <div className="actions">
+          {wallet && (
+            <form method="post" action="/api/pass" onSubmit={onWallet}>
+              <input type="hidden" name="token" ref={tokenRef} />
+              <button className="btn wallet" type="submit"><WalletGlyph />Add to Apple Wallet</button>
+            </form>
+          )}
+          <a className="btn ghost sm" href="/hack-day.ics" download="rowdylaunch-hack-day.ics">Add to calendar</a>
+          <a className="btn ghost sm" href={event.mapsUrl} target="_blank" rel="noopener">Map</a>
         </div>
       </div>
-      <dl className="rows">
-        <div className="row"><dt>Date</dt><dd>{event.dateLabel}, {event.timeLabel}</dd></div>
-        <div className="row"><dt>Where</dt><dd>{event.venue}, {event.address}. <a href={event.mapsUrl} target="_blank" rel="noopener">Map</a></dd></div>
-        <div className="row"><dt>Countdown</dt><dd><Countdown compact /></dd></div>
-      </dl>
+      <div className="tear" aria-hidden="true" />
+      <div className="stub">
+        {qr ? <img src={qr} alt={`Check-in QR code, ticket ${formatTicket(reg.ticket)}`} width={132} height={132} /> : <div className="qrph" aria-hidden="true" />}
+        <div>
+          <span className="lbl">Ticket</span>
+          <div className="code">{formatTicket(reg.ticket)}</div>
+          <p>Scan at the door, or read the code to an organizer.</p>
+        </div>
+      </div>
     </section>
   );
 }
@@ -484,12 +571,18 @@ function RegForm({ email, userId, initial, onSaved, onCancel, bare }: { email: s
 /* ---------- organizer dashboard ---------- */
 
 const noDiet = /^(none|no|n\/a|na|nope|nothing|-)?$/i;
+type Filter = "all" | "in" | "out" | "credit" | "diet";
+const filters: [Filter, string][] = [["all", "Everyone"], ["out", "Not yet in"], ["in", "Checked in"], ["credit", "Extra credit"], ["diet", "Dietary"]];
+const hasDiet = (r: Reg) => Boolean(r.dietary && !noDiet.test(r.dietary.trim()));
 
 function OrganizerDashboard({ session }: { session: Session }) {
   const me = (session.user.email ?? "").toLowerCase();
   const [rows, setRows] = useState<Reg[] | null>(null);
   const [orgs, setOrgs] = useState<string[] | null>(null);
-  const [q, setQ] = useState(() => new URLSearchParams(location.search).get("code") ?? "");
+  const [loadedAt, setLoadedAt] = useState<Date | null>(null);
+  const [scanCode, setScanCode] = useState(() => normTicket(new URLSearchParams(location.search).get("code") ?? ""));
+  const [q, setQ] = useState("");
+  const [filter, setFilter] = useState<Filter>("all");
   const [msg, setMsg] = useState<Msg>(null);
   const [orgMsg, setOrgMsg] = useState<Msg>(null);
 
@@ -501,6 +594,7 @@ function OrganizerDashboard({ session }: { session: Session }) {
     if (r.error) setMsg({ text: friendly(r.error.message), bad: true });
     setRows((r.data as Reg[] | null) ?? []);
     setOrgs(((o.data as { email: string }[] | null) ?? []).map((x) => x.email));
+    setLoadedAt(new Date());
   };
 
   useEffect(() => {
@@ -512,31 +606,42 @@ function OrganizerDashboard({ session }: { session: Session }) {
   }, []);
 
   const all = rows ?? [];
+  const scanned = useMemo(() => (scanCode ? all.find((r) => r.ticket === scanCode) ?? null : null), [all, scanCode]);
+
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
-    if (!s) return all;
+    const code = normTicket(q);
     const digits = s.replace(/\D/g, "");
-    return all.filter((r) =>
-      r.name.toLowerCase().includes(s) ||
-      r.email.toLowerCase().includes(s) ||
-      ticketOf(r.user_id).toLowerCase() === s ||
-      (digits.length >= 4 && r.phone.replace(/\D/g, "").includes(digits)),
-    );
-  }, [all, q]);
+    return all.filter((r) => {
+      if (filter === "in" && !r.checked_in_at) return false;
+      if (filter === "out" && r.checked_in_at) return false;
+      if (filter === "credit" && !r.extra_credit_class) return false;
+      if (filter === "diet" && !hasDiet(r)) return false;
+      if (!s) return true;
+      return r.name.toLowerCase().includes(s) ||
+        r.email.toLowerCase().includes(s) ||
+        (code.length >= 3 && r.ticket.startsWith(code)) ||
+        (digits.length >= 4 && r.phone.replace(/\D/g, "").includes(digits));
+    });
+  }, [all, q, filter]);
 
   const checkedIn = all.filter((r) => r.checked_in_at).length;
-  const dietary = all.filter((r) => r.dietary && !noDiet.test(r.dietary.trim())).length;
-  const classes = useMemo(() => {
+  const withDiet = all.filter(hasDiet);
+  const withCredit = all.filter((r) => r.extra_credit_class);
+
+  const group = (pick: (r: Reg) => string | null, list: Reg[]) => {
     const m = new Map<string, { label: string; n: number; in: number }>();
-    for (const r of all) {
-      if (!r.extra_credit_class) continue;
-      const key = r.extra_credit_class.trim().replace(/\s+/g, " ").toLowerCase();
-      const cur = m.get(key) ?? { label: r.extra_credit_class.trim(), n: 0, in: 0 };
+    for (const r of list) {
+      const raw = pick(r); if (!raw) continue;
+      const key = raw.trim().replace(/\s+/g, " ").toLowerCase();
+      const cur = m.get(key) ?? { label: raw.trim(), n: 0, in: 0 };
       cur.n += 1; if (r.checked_in_at) cur.in += 1;
       m.set(key, cur);
     }
     return [...m.values()].sort((a, b) => b.n - a.n || a.label.localeCompare(b.label));
-  }, [all]);
+  };
+  const classes = useMemo(() => group((r) => r.extra_credit_class, withCredit), [all]);
+  const diets = useMemo(() => group((r) => r.dietary, withDiet), [all]);
 
   const toggle = async (r: Reg) => {
     const v = r.checked_in_at ? null : new Date().toISOString();
@@ -546,6 +651,8 @@ function OrganizerDashboard({ session }: { session: Session }) {
     setRows((cur) => (cur ?? []).map((x) => (x.user_id === r.user_id ? { ...x, checked_in_at: v } : x)));
   };
 
+  const clearScan = () => { setScanCode(""); history.replaceState(null, "", location.pathname); };
+
   const addOrg = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
@@ -554,7 +661,7 @@ function OrganizerDashboard({ session }: { session: Session }) {
     const { error } = await supabase.from("organizers").insert([{ email }]);
     if (error) { setOrgMsg({ text: friendly(error.message), bad: true }); return; }
     setOrgs([...(orgs ?? []), email].sort());
-    setOrgMsg({ text: `${email} added. They get the dashboard the next time they log in.` });
+    setOrgMsg({ text: `${email} added. They get mission control the next time they log in.` });
     form.reset();
   };
 
@@ -566,32 +673,71 @@ function OrganizerDashboard({ session }: { session: Session }) {
     setOrgMsg({ text: `${email} removed.` });
   };
 
+  const pct = all.length ? Math.round((checkedIn / all.length) * 100) : 0;
+
   return (
     <>
-      <Head eyebrow="Mission control" title="Organizer dashboard" blurb={rows ? `${all.length} registered · ${checkedIn} checked in` : "Loading"} />
+      <Head
+        eyebrow="Mission control"
+        title="Organizer dashboard"
+        blurb={rows ? `${all.length} registered · ${checkedIn} checked in` : "Loading"}
+        aside={<span className="pulse"><i aria-hidden="true" />{loadedAt ? `Updated ${loadedAt.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", second: "2-digit" })}` : "Loading"}</span>}
+      />
+
+      {scanCode && rows && (
+        <section className={`panel scan${scanned ? "" : " miss"}`} aria-live="polite">
+          {scanned ? (
+            <>
+              <div>
+                <span className="eyebrow">Scanned</span>
+                <div className="name">{scanned.name}</div>
+                <div className="meta">{formatTicket(scanned.ticket)} · {scanned.email}{hasDiet(scanned) ? ` · ${scanned.dietary}` : ""}{scanned.extra_credit_class ? ` · ${scanned.extra_credit_class}` : ""}</div>
+                <div className="meta">{scanned.checked_in_at ? `Already checked in at ${clock(scanned.checked_in_at)}.` : "Not checked in yet."}</div>
+              </div>
+              <div className="actions">
+                <button className={`btn lg ${scanned.checked_in_at ? "ghost" : "primary"}`} type="button" onClick={() => toggle(scanned)}>{scanned.checked_in_at ? "Undo check-in" : `Check in ${scanned.name.trim().split(/\s+/)[0]}`}</button>
+                <button className="link" type="button" onClick={clearScan}>Done</button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div>
+                <span className="eyebrow">Scanned</span>
+                <div className="name">No match for {formatTicket(scanCode)}</div>
+                <div className="meta">Ask for their name and search below.</div>
+              </div>
+              <div className="actions"><button className="link" type="button" onClick={clearScan}>Dismiss</button></div>
+            </>
+          )}
+        </section>
+      )}
+
       <div className="stats" aria-label="Totals">
         <div className="panel stat"><b>{all.length}</b><span>Registered</span></div>
-        <div className="panel stat"><b>{checkedIn}</b><span>Checked in</span></div>
-        <div className="panel stat"><b>{dietary}</b><span>Dietary needs</span></div>
-        <div className="panel stat"><b>{all.filter((r) => r.extra_credit_class).length}</b><span>Extra credit</span></div>
+        <div className="panel stat"><b>{checkedIn}</b><span>Checked in · {pct}%</span><div className="meter"><i style={{ width: `${pct}%` }} /></div></div>
+        <div className="panel stat"><b>{withDiet.length}</b><span>Dietary needs</span></div>
+        <div className="panel stat"><b>{withCredit.length}</b><span>Extra credit</span></div>
       </div>
 
       <section className="panel roster" aria-label="Check-in and roster">
         <div className="bar">
-          <label className="field search">
+          <label className="search">
             <span>Find someone</span>
-            <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Name, email, phone or ticket code" autoFocus={Boolean(q)} />
+            <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Name, email, phone or ticket code" />
           </label>
-          <div className="actions"><span className="muted">{q ? `${filtered.length} of ${all.length}` : `${all.length} total`}</span>{" "}<button className="btn ghost sm" type="button" onClick={load}>Refresh</button></div>
+          <div className="actions"><span className="muted">{q || filter !== "all" ? `${filtered.length} of ${all.length}` : `${all.length} total`}</span>{" "}<button className="btn ghost sm" type="button" onClick={load}>Refresh</button></div>
+        </div>
+        <div className="chips" role="group" aria-label="Filter">
+          {filters.map(([k, label]) => <button key={k} type="button" aria-pressed={filter === k} onClick={() => setFilter(k)}>{label}</button>)}
         </div>
         <div className="scroll">
           <table>
             <thead><tr><th>Name</th><th>Ticket</th><th>Email</th><th>Phone</th><th>Dietary</th><th>Extra credit</th><th>Status</th><th /></tr></thead>
             <tbody>
               {filtered.map((r) => (
-                <tr key={r.user_id} data-in={r.checked_in_at ? "true" : undefined}>
+                <tr key={r.user_id} data-in={r.checked_in_at ? "true" : undefined} className={scanned?.user_id === r.user_id ? "hit" : undefined}>
                   <td>{r.name}</td>
-                  <td className="mono">{ticketOf(r.user_id)}</td>
+                  <td className="mono">{formatTicket(r.ticket)}</td>
                   <td>{r.email}</td>
                   <td>{r.phone}</td>
                   <td>{r.dietary ?? ""}</td>
@@ -611,15 +757,24 @@ function OrganizerDashboard({ session }: { session: Session }) {
         <section className="panel card" aria-label="Extra credit by class">
           <span className="eyebrow">Extra credit by class</span>
           {classes.length ? (
-            <ul className="classes">
-              {classes.map((c) => <li key={c.label}><span>{c.label}</span><span className="muted">{c.n} registered · {c.in} checked in</span></li>)}
+            <ul className="tally">
+              {classes.map((c) => <li key={c.label}><span>{c.label}</span><span className="muted">{c.n} · {c.in} in</span></li>)}
             </ul>
           ) : <p className="muted">Nobody has listed a class yet.</p>}
           <p className="muted">After the event, send each professor the names of their checked-in students from the roster.</p>
         </section>
+        <section className="panel card" aria-label="Dietary needs">
+          <span className="eyebrow">Dietary needs</span>
+          {diets.length ? (
+            <ul className="tally">
+              {diets.map((d) => <li key={d.label}><span>{d.label}</span><span className="muted">{d.n}</span></li>)}
+            </ul>
+          ) : <p className="muted">No dietary needs listed yet.</p>}
+          <p className="muted">Use this for the food order. Entries are grouped as typed.</p>
+        </section>
         <section className="panel card" aria-label="Organizers">
           <span className="eyebrow">Organizers</span>
-          <ul className="orgs">
+          <ul className="tally orgs">
             {(orgs ?? []).map((o) => (
               <li key={o}><span>{o}{o === me ? " (you)" : ""}</span>{o !== me && <button type="button" className="link" onClick={() => removeOrg(o)}>Remove</button>}</li>
             ))}
@@ -629,9 +784,10 @@ function OrganizerDashboard({ session }: { session: Session }) {
               <span>Add an organizer by email</span>
               <input type="email" name="email" required maxLength={254} placeholder="name@example.com" />
             </label>
-            <div className="foot"><button className="btn ghost sm" type="submit">Add organizer</button><small>They register or log in with that email and see this dashboard.</small></div>
+            <div className="foot"><button className="btn ghost sm" type="submit">Add organizer</button></div>
             <Note msg={orgMsg} />
           </form>
+          <p className="muted">They register or log in with that email and get this page.</p>
         </section>
       </div>
     </>

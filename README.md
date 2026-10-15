@@ -37,9 +37,19 @@ Design references, in priority order: the Octocat-at-the-airlock image in `~/Des
 Registration lives on this site, not on MLH.
 
 - **`/register`** (`src/components/Portal.tsx`): one screen with name, email, phone, dietary restrictions, optional extra-credit class, the terms and conditions chart (`terms` in `src/data.ts`), an agree checkbox, and a password chosen at the end. Submitting creates the Supabase Auth account and the `registrations` row in one go. No agreement, no account: the browser blocks the submit, the code blocks it again, and the database rejects a row with `agreed = false`. Email confirmation is off so the free tier's email limit cannot block signups.
-- **Logged-in attendees** see a dashboard: boarding pass with a QR code and six-character ticket code, check-in status, a pre-launch checklist, the schedule, and their details with an edit form. The QR encodes `/organizer?code=XXXXXX`, so any phone camera works as a scanner.
+- **Logged-in attendees** see a boarding pass styled as a ticket (passenger, flight RL-1031, gate, seat) with a QR code and an eight-character ticket code, plus a countdown, a pre-launch checklist, the schedule, and their details with an edit form. Ticket codes are random (`gen_ticket()` in the database, alphabet without look-alike glyphs), assigned by the insert trigger and never changeable from the client. The QR encodes `/organizer?code=XXXXXXXX`, so any phone camera works as a scanner. Actions under the pass: Add to Apple Wallet (Apple devices, only once the pass certificate is configured), Add to calendar (`public/hack-day.ics`), Map.
 - **`/organizer`**: for emails in the `organizers` table. Totals, search by name, email, phone or ticket code, one-click check-in and undo, extra credit grouped by class, and an organizers panel to add or remove organizer emails. The first organizer was seeded by migration; after that, organizers manage the list themselves.
-- Only organizers can set or clear `checked_in_at` (enforced in the `registrations_stamp` trigger). Attendees can only read and edit their own row. Anonymous requests get nothing. Returning attendees use "Already registered? Log in"; password resets go through Supabase's built-in mailer, which allows a few messages an hour.
+- Only organizers can set or clear `checked_in_at` and nobody can change a ticket code (both enforced in the `registrations_stamp` trigger). Attendees can only read and edit their own row. Anonymous requests get nothing. Returning attendees use "Already registered? Log in"; password resets go through Supabase's built-in mailer, which allows a few messages an hour.
+
+### Apple Wallet passes
+
+`api/pass.ts` is a Vercel function. `GET /api/pass` reports whether signing is configured; `POST /api/pass` with the attendee's access token in the form body verifies the token with Supabase, reads that person's registration under row-level security, and returns a signed `.pkpass` built by `lib/pass.ts` (artwork in `lib/passAssets.ts`, regenerated with `node scripts/pass-assets.mjs`). Apple only accepts passes signed with a Pass Type ID certificate, which needs a paid Apple Developer membership. To switch it on:
+
+1. In the Apple Developer portal, Certificates, Identifiers & Profiles, create a Pass Type ID such as `pass.com.rowdylaunch.hackday`, then create its certificate using a CSR from Keychain Access. Download it, add it to Keychain, and export certificate plus private key as a `.p12`.
+2. Download Apple's WWDR G4 certificate from https://www.apple.com/certificateauthority/AppleWWDRCAG4.cer.
+3. Run `scripts/wallet-env.sh pass.p12 AppleWWDRCAG4.cer pass.com.rowdylaunch.hackday <team id>`. It converts both to PEM and sets the five env vars on Vercel production without printing them. Redeploy.
+
+Until then the button stays hidden and the on-screen pass does the same job at the door.
 
 The Supabase project is `rowdylaunch` (ref `sejafunjijjhszotyiht`) in the org RowdyLaunch, dashboard at https://supabase.com/dashboard/project/sejafunjijjhszotyiht. Schema and policies are in `supabase/migrations`; auth settings (site URL, redirect URLs, 8-character minimum password, one auth email a minute) are in `supabase/config.toml`. The portal is code-split, so the event page never loads the Supabase client. `vercel.json` rewrites `/register` and `/organizer` to the app.
 
