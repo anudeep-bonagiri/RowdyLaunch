@@ -32,15 +32,17 @@ The concept is the inside of a ship. The hero is a 260vh pinned scene: an SVG ai
 
 Design references, in priority order: the Octocat-at-the-airlock image in `~/Desktop/hacktoberfest/inspo`, and the hackathon site lookbook (LA Hacks for the pill nav and announcement toast, Hack the North for the backdrop that changes with the scroll, HackTX for turning the deadline into a prop).
 
-## Manifest form (Supabase)
+## Registration portal (Supabase)
 
-The RSVP section (`src/components/Rsvp.tsx`) collects name, email, phone, dietary restrictions, an optional extra-credit class and a liability checkbox. It writes one row to the `rsvps` table in Supabase through PostgREST (`src/db.ts`, no SDK). The section and its nav item only render when both env vars are set, so the site works without a backend.
+Registration lives on this site at `/register` (`src/components/Portal.tsx`), not on MLH. Supabase Auth handles accounts with email and password; email confirmation is off so the free tier's email limit cannot block signups. After signing in, attendees fill one form (name, phone, dietary restrictions, optional extra-credit class, liability checkbox) that writes their row in `registrations`. They see a boarding pass with their details and can edit them until the event ends. Anyone whose email is in the `organizers` table sees the full roster on the same page with a CSV download.
 
-The project is `rowdylaunch` (ref `sejafunjijjhszotyiht`) in the Supabase org RowdyLaunch, dashboard at https://supabase.com/dashboard/project/sejafunjijjhszotyiht. The migration in `supabase/migrations/20261014000000_rsvps.sql` is applied; it creates the table, a unique index on lowercased email, and an insert-only policy for the anon role. Nothing can read the table through the API; organizers read it in the dashboard under Table Editor, rsvps.
+The Supabase project is `rowdylaunch` (ref `sejafunjijjhszotyiht`) in the org RowdyLaunch, dashboard at https://supabase.com/dashboard/project/sejafunjijjhszotyiht. Schema and policies are in `supabase/migrations`; auth settings (site URL, redirect URLs, 8-character minimum password) are in `supabase/config.toml`. The portal is code-split, so the event page never loads the Supabase client. `vercel.json` rewrites `/register` to the app.
 
-To run the form locally, copy `.env.example` to `.env.local` and fill in the project URL and publishable key from Project Settings, API Keys. Both variables are already set on Vercel for production. To change the schema, add a new file under `supabase/migrations` and run `supabase link --project-ref sejafunjijjhszotyiht` then `supabase db push`.
-
-The form hides itself once the event is over. Export the table to CSV for the food order, then delete the rows after the event; there is no reason to keep phone numbers.
+- **Add an organizer:** in the dashboard SQL editor, `insert into public.organizers (email) values ('name@example.com');`. The person signs in with that email and the roster appears.
+- **Run it locally:** copy `.env.example` to `.env.local` and fill in the project URL and publishable key from Project Settings, API Keys. Both are set on Vercel for production.
+- **Change the schema:** add a file under `supabase/migrations`, then `supabase link --project-ref sejafunjijjhszotyiht` and `supabase db push`. Change auth settings in `config.toml` and run `supabase config push`.
+- **Password resets** go through Supabase's built-in email, which is limited to a few messages an hour. If that bites, set up custom SMTP (Resend works) under Authentication, SMTP settings.
+- **After the event,** export the roster to CSV, then delete the rows. There is no reason to keep phone numbers.
 
 ## Assets
 

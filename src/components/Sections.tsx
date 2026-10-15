@@ -37,7 +37,7 @@ export function Mission() {
               <strong>{event.host}</strong> is hosting. {event.hostBlurb.replace(/^RowdyLaunch is /, "We are ")} Shipping code is how most founders start, so we are running this day.
             </p>
             <ol className="steps">
-              <li>Register on MLH and bring a laptop with Git and a GitHub account.</li>
+              <li>Register on this site and bring a laptop with Git and a GitHub account.</li>
               <li>At the morning briefing, pick a beginner-friendly issue from a project you use.</li>
               <li>Fix it, open the pull request and get it reviewed before you leave.</li>
             </ol>
@@ -48,7 +48,7 @@ export function Mission() {
               <div className="row"><dt>Date</dt><dd>{event.dateLabel}</dd></div>
               <div className="row"><dt>Window</dt><dd>{event.timeLabel}</dd></div>
               <div className="row"><dt>Location</dt><dd>{event.venue}<br />{event.address}</dd></div>
-              <div className="row"><dt>Host</dt><dd>{event.host}, listed on MLH</dd></div>
+              <div className="row"><dt>Host</dt><dd>{event.host}</dd></div>
               <div className="row"><dt>Who</dt><dd>University students and working professionals</dd></div>
               <div className="row"><dt>Bring</dt><dd>Laptop, charger, GitHub account</dd></div>
             </dl>

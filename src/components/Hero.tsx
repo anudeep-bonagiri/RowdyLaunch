@@ -69,9 +69,7 @@ export default function Hero() {
             {phase === "over" ? (
               <a className="btn primary lg" href={event.postEventUrl} target="_blank" rel="noopener">See what we shipped</a>
             ) : (
-              <a className="btn primary lg" href={event.registerUrl} target="_blank" rel="noopener" aria-label="Register on MLH, opens in a new tab">
-                Register on MLH
-              </a>
+              <a className="btn primary lg" href={event.registerUrl}>Register</a>
             )}
             <Countdown compact />
           </m.div>

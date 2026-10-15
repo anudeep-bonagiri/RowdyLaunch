@@ -1,7 +1,6 @@
 import { m, useScroll, useTransform, useReducedMotion } from "framer-motion";
 import Nav from "./components/Nav";
 import Hero from "./components/Hero";
-import Rsvp from "./components/Rsvp";
 import { Mission, FlightPlan, Crew, GroundControl, Supplies, FAQ, Footer } from "./components/Sections";
 
 // Fixed backdrop behind everything. Space fades in as the hatch opens, two
@@ -42,7 +41,6 @@ export default function App() {
       <main>
         <Mission />
         <FlightPlan />
-        <Rsvp />
         <Crew />
         <GroundControl />
         <Supplies />

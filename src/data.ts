@@ -14,8 +14,7 @@ export const event = {
   address: "5 Paseo Del Norte, San Antonio, TX 78249",
   mapsUrl:
     "https://www.google.com/maps/search/?api=1&query=UTSA+Business+Building+5+Paseo+Del+Norte+San+Antonio+TX+78249",
-  registerUrl:
-    "https://events.mlh.com/events/15160-hacktoberfest-hack-day-san-antonio-x-rowdylaunch?intent=register",
+  registerUrl: "/register",
   mlhEventUrl:
     "https://events.mlh.com/events/15160-hacktoberfest-hack-day-san-antonio-x-rowdylaunch",
   codeOfConductUrl: "https://github.com/MLH/mlh-policies/blob/main/code-of-conduct.md",
@@ -85,15 +84,15 @@ export const faq: { tab: string; items: { q: string; a: string }[] }[] = [
     items: [
       {
         q: "Who can attend?",
-        a: "University students and working professionals. Registration is on the MLH event page and asks for your name and email.",
+        a: "University students and working professionals. Register on this site with an email and password. It takes about a minute.",
       },
       {
         q: "Can I register on the day?",
-        a: "Register ahead on MLH so we know how many seats to set up. If you turn up unregistered, find an organizer at the door and we will sort it out.",
+        a: "Register ahead so we know how many seats and lunches to set up. If you turn up unregistered, find an organizer at the door and we will sort it out.",
       },
       {
         q: "Is there a liability release?",
-        a: "Yes. By registering you release the organizers, the venue (UTSA) and event sponsors from liability for personal injury or property damage during the event. The wording is on the MLH registration form.",
+        a: "Yes. By registering you release the organizers, the venue (UTSA) and event sponsors from liability for personal injury or property damage during the event. You accept it on the registration form on this site.",
       },
     ],
   },

@@ -1,13 +1,10 @@
 import { useEffect, useState } from "react";
 import { event } from "../data";
 import { useEventPhase } from "./Countdown";
-import { dbReady } from "../db";
 
-// RSVP only exists once the Supabase env vars are set (see src/db.ts).
 const items = [
   ["#mission", "Mission"],
   ["#flight-plan", "Flight plan"],
-  ["#manifest", "RSVP"],
   ["#crew", "Crew"],
   ["#ground-control", "Where"],
   ["#supplies", "Sponsors"],
@@ -43,13 +40,13 @@ export default function Nav() {
   return (
     <nav className="nav" aria-label="Site">
       <a className="brand" href="#top"><img src="/logo.png" alt="" width={640} height={640} />RowdyLaunch</a>
-      {items.filter(([href]) => href !== "#manifest" || dbReady).map(([href, label]) => (
+      {items.map(([href, label]) => (
         <a key={href} className="item" href={href}>{label}</a>
       ))}
       {phase === "over" ? (
         <a className="btn primary sm cta" data-hidden={!showCta} href={event.postEventUrl} target="_blank" rel="noopener">Recap</a>
       ) : (
-        <a className="btn primary sm cta" data-hidden={!showCta} aria-hidden={!showCta} tabIndex={showCta ? 0 : -1} href={event.registerUrl} target="_blank" rel="noopener" aria-label="Register on MLH, opens in a new tab">Register</a>
+        <a className="btn primary sm cta" data-hidden={!showCta} aria-hidden={!showCta} tabIndex={showCta ? 0 : -1} href={event.registerUrl}>Register</a>
       )}
     </nav>
   );
