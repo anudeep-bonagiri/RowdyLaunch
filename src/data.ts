@@ -92,7 +92,7 @@ export const faq: { tab: string; items: { q: string; a: string }[] }[] = [
       },
       {
         q: "Is there a liability release?",
-        a: "Yes. By registering you release the organizers, the venue (UTSA) and event sponsors from liability for personal injury or property damage during the event. You accept it on the registration form on this site.",
+        a: "Yes. By registering you release the organizers, the venue (UTSA) and event sponsors from liability for personal injury or property damage during the event. The full terms and conditions are listed on the registration form on this site, and you accept them there.",
       },
     ],
   },
@@ -117,4 +117,20 @@ export const faq: { tab: string; items: { q: string; a: string }[] }[] = [
       },
     ],
   },
+];
+
+// Shown as a chart on the registration form. Each row is a commitment the
+// crew has actually made (professor emails, RowdyLink submission, FAQ), in
+// plain words. Add a row when a new promise is made; do not pad it.
+export const terms = [
+  { t: "Liability release", d: "You release RowdyLaunch, the organizers, UTSA as the venue and the event sponsors from liability for personal injury or property damage during the event." },
+  { t: "Code of conduct", d: "The MLH Code of Conduct applies to everyone at the event. Organizers can ask anyone who breaks it to leave." },
+  { t: "Campus rules", d: "This is a registered student-organization event on the UTSA Main Campus. UTSA student conduct and Business Building rules apply. UTSA is the venue, not a sponsor." },
+  { t: "Check-in", d: "Attendance counts only with an in-person check-in at the door. Pull requests are verified by GitHub handle." },
+  { t: "Extra credit", d: "If you list a class, we send your name, check-in and pull request status to that professor after the event. Whether credit is given is up to the professor." },
+  { t: "Photos and video", d: "We take photos and video during the day and share them with MLH, Hacktoberfest and RowdyLaunch channels. Tell an organizer at check-in if you would rather not appear." },
+  { t: "Food", d: "Lunch and snacks are free. Dietary restrictions you list are used for the food order only and are not a guarantee of a specific meal." },
+  { t: "Prizes and swag", d: "Hacktoberfest prizes and swag are limited and go while supplies last. Hacktoberfest's digital rewards follow Hacktoberfest's own rules." },
+  { t: "Your belongings", d: "Bring your own laptop and charger. You are responsible for your things. Outlets are shared." },
+  { t: "Your data", d: "Only the organizers see your registration. Your phone number is for day-of contact. Registrations are deleted after the event." },
 ];

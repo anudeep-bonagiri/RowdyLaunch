@@ -306,6 +306,17 @@ footer .fine { color: var(--fg-3); font-size: 0.78rem; max-width: 70ch; }
 .form input:not([type="checkbox"]) { width: 100%; font: inherit; font-size: 0.96rem; color: var(--fg); background: rgba(255, 255, 255, 0.04); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; outline: none; }
 .form input::placeholder { color: var(--fg-3); }
 .form input:not([type="checkbox"]):focus-visible { border-color: var(--sky); box-shadow: 0 0 0 3px rgba(154, 211, 234, 0.25); }
+.terms { border: 1px solid var(--line); border-radius: 14px; background: rgba(255, 255, 255, 0.03); min-width: 0; }
+.terms summary { cursor: pointer; padding: 12px 16px; font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fg-3); list-style: none; display: flex; justify-content: space-between; gap: 10px; }
+.terms summary::-webkit-details-marker { display: none; }
+.terms summary::after { content: "+"; font-size: 0.9rem; }
+.terms[open] summary::after { content: "\2212"; }
+.terms dl { margin: 0; padding: 0 16px 6px; max-height: 300px; overflow-y: auto; display: grid; }
+.terms .trow { display: grid; grid-template-columns: 128px 1fr; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); font-size: 0.84rem; line-height: 1.5; }
+.terms .trow dt { font-weight: 600; color: var(--fg); }
+.terms .trow dd { color: var(--fg-2); min-width: 0; margin: 0; }
+.terms .trow a { color: var(--fg); }
+@media (max-width: 560px) { .terms .trow { grid-template-columns: 1fr; gap: 2px; } }
 .form .agree { display: flex; gap: 12px; align-items: flex-start; font-size: 0.88rem; color: var(--fg-2); line-height: 1.5; cursor: pointer; }
 .form .agree input { margin-top: 3px; width: 18px; height: 18px; flex: none; accent-color: var(--orange); }
 .form .agree a { color: var(--fg); }

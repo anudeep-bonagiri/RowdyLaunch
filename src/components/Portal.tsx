@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase, configured } from "../supabase";
-import { event } from "../data";
+import { event, terms } from "../data";
 import { useEventPhase } from "./Countdown";
 
 type Reg = {
@@ -77,6 +77,20 @@ export default function Portal() {
         </p>
       </footer>
     </div>
+  );
+}
+
+function Terms({ open }: { open: boolean }) {
+  return (
+    <details className="terms full" open={open}>
+      <summary><span>Terms and conditions <span className="muted">· {terms.length} items</span></span></summary>
+      <dl>
+        {terms.map((x) => (
+          <div className="trow" key={x.t}><dt>{x.t}</dt><dd>{x.d}</dd></div>
+        ))}
+        <div className="trow"><dt>Full policies</dt><dd><a href={event.codeOfConductUrl} target="_blank" rel="noopener">MLH Code of Conduct</a> · <a href={event.hacktoberfestUrl} target="_blank" rel="noopener">Hacktoberfest rules</a></dd></div>
+      </dl>
+    </details>
   );
 }
 
@@ -187,13 +201,10 @@ function Auth({ mode, setMode, notice, onApplying, onApplied }: AuthProps) {
               <span>Dietary restrictions (optional)</span>
               <input type="text" name="dietary" maxLength={300} placeholder="Vegetarian, halal, nut allergy, none" />
             </label>
+            <Terms open />
             <label className="agree full">
               <input type="checkbox" name="agreed" required />
-              <span>
-                I release RowdyLaunch, the organizers, UTSA as the venue and the event sponsors from liability for personal
-                injury or property damage during the event, and I will follow the{" "}
-                <a href={event.codeOfConductUrl} target="_blank" rel="noopener">MLH Code of Conduct</a>. *
-              </span>
+              <span>I have read the terms and conditions above and agree to them. *</span>
             </label>
             <label className="field full">
               <span>Last thing: choose a password (8+ characters) *</span>
@@ -373,13 +384,10 @@ function RegForm({ email, userId, initial, onSaved, onCancel }: { email: string;
           <span>Extra credit class (optional)</span>
           <input type="text" name="cls" maxLength={120} placeholder="Course and professor" defaultValue={initial?.extra_credit_class ?? ""} />
         </label>
+        <Terms open={!initial} />
         <label className="agree full">
           <input type="checkbox" name="agreed" required defaultChecked={Boolean(initial)} />
-          <span>
-            I release RowdyLaunch, the organizers, UTSA as the venue and the event sponsors from liability for personal injury
-            or property damage during the event, and I will follow the{" "}
-            <a href={event.codeOfConductUrl} target="_blank" rel="noopener">MLH Code of Conduct</a>. *
-          </span>
+          <span>I have read the terms and conditions and agree to them. *</span>
         </label>
       </div>
       <div className="foot">
