@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createClient } from "@supabase/supabase-js";
-import { buildPass, passEnv } from "../lib/pass";
+import { buildPass, passEnv } from "../lib/pass.js";
 
 // GET  -> { configured }  (the portal shows the Wallet button only when true)
 // POST -> the signed .pkpass for the signed-in attendee. The access token

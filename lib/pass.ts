@@ -1,6 +1,6 @@
 import { PKPass } from "passkit-generator";
-import { passAssets } from "./passAssets";
-import { event } from "../src/data";
+import { passAssets } from "./passAssets.js";
+import { event } from "../src/data.js";
 
 export type PassReg = { ticket: string; name: string; email: string; checked_in_at: string | null };
 export type PassEnv = {
