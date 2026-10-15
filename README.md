@@ -36,9 +36,9 @@ Design references, in priority order: the Octocat-at-the-airlock image in `~/Des
 
 The RSVP section (`src/components/Rsvp.tsx`) collects name, email, phone, dietary restrictions, an optional extra-credit class and a liability checkbox. It writes one row to the `rsvps` table in Supabase through PostgREST (`src/db.ts`, no SDK). The section and its nav item only render when both env vars are set, so the site works without a backend.
 
-1. Create a Supabase project and run `supabase/migrations/20261014000000_rsvps.sql` in the SQL editor (or `supabase db push`). It creates the table, a unique index on lowercased email, and an insert-only policy for the anon role. Nothing can read the table through the API; organizers read it in the dashboard.
-2. Copy `.env.example` to `.env.local` and fill in the project URL and publishable key from Project Settings, API.
-3. Add the same two variables to the Vercel project (Settings, Environment Variables) and redeploy.
+The project is `rowdylaunch` (ref `sejafunjijjhszotyiht`) in the Supabase org RowdyLaunch, dashboard at https://supabase.com/dashboard/project/sejafunjijjhszotyiht. The migration in `supabase/migrations/20261014000000_rsvps.sql` is applied; it creates the table, a unique index on lowercased email, and an insert-only policy for the anon role. Nothing can read the table through the API; organizers read it in the dashboard under Table Editor, rsvps.
+
+To run the form locally, copy `.env.example` to `.env.local` and fill in the project URL and publishable key from Project Settings, API Keys. Both variables are already set on Vercel for production. To change the schema, add a new file under `supabase/migrations` and run `supabase link --project-ref sejafunjijjhszotyiht` then `supabase db push`.
 
 The form hides itself once the event is over. Export the table to CSV for the food order, then delete the rows after the event; there is no reason to keep phone numbers.
 
