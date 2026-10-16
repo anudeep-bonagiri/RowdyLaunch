@@ -21,6 +21,7 @@ export const event = {
   incidentsEmail: "incidents@mlh.io",
   incidentsPhone: "+1 409 202 6060",
   hacktoberfestUrl: "https://hacktoberfest.com/",
+  discordUrl: "https://discord.gg/dyGUFjNhqW",
   repoUrl: "https://github.com/anudeep-bonagiri/RowdyLaunch",
   // Where the main button points once the event is over.
   postEventUrl: "https://github.com/anudeep-bonagiri/RowdyLaunch",

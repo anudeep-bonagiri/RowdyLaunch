@@ -410,9 +410,10 @@ function Dashboard({ session, seed }: { session: Session; seed: Reg | null }) {
       </div>
       <div className="dash">
         <section className="panel card" aria-label="Before launch">
-          <div className="bar"><span className="eyebrow">Before launch</span><span className="muted">{(reg.checked_in_at ? 2 : 1)} of 5 done</span></div>
+          <div className="bar"><span className="eyebrow">Before launch</span><span className="muted">{(reg.checked_in_at ? 2 : 1)} of 6 done</span></div>
           <ol className="check">
             <li data-done="true"><b>Registered</b><span>Done {when(reg.created_at)}.</span></li>
+            <li><b>Join the Discord</b><span><a href={event.discordUrl} target="_blank" rel="noopener">Join our Discord</a> for updates, questions before the day, and finding a teammate.</span></li>
             <li><b>Git installed, GitHub ready</b><span><a href="https://git-scm.com/downloads" target="_blank" rel="noopener">Install Git</a> and sign in to <a href="https://github.com" target="_blank" rel="noopener">GitHub</a> on the laptop you are bringing.</span></li>
             <li><b>Pick a project</b><span>Browse <a href="https://hacktoberfest.com/participation/" target="_blank" rel="noopener">participating projects</a> or a repo you already use. The morning briefing walks through choosing an issue.</span></li>
             <li><b>Laptop and charger packed</b><span>Outlets are shared. Lunch and snacks are on us.</span></li>
@@ -498,6 +499,7 @@ function BoardingPass({ reg, wallet }: { reg: Reg; wallet: boolean }) {
           )}
           <a className="btn ghost sm" href="/hack-day.ics" download="rowdylaunch-hack-day.ics">Add to calendar</a>
           <a className="btn ghost sm" href={event.mapsUrl} target="_blank" rel="noopener">Map</a>
+          <a className="btn ghost sm" href={event.discordUrl} target="_blank" rel="noopener">Discord</a>
         </div>
       </div>
       <div className="tear" aria-hidden="true" />

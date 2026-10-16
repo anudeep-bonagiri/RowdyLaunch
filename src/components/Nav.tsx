@@ -43,6 +43,7 @@ export default function Nav() {
       {items.map(([href, label]) => (
         <a key={href} className="item" href={href}>{label}</a>
       ))}
+      <a className="item" href={event.discordUrl} target="_blank" rel="noopener">Discord</a>
       {phase === "over" ? (
         <a className="btn primary sm cta" data-hidden={!showCta} href={event.postEventUrl} target="_blank" rel="noopener">Recap</a>
       ) : (

@@ -41,6 +41,9 @@ export function Mission() {
               <li>At the morning briefing, pick a beginner-friendly issue from a project you use.</li>
               <li>Fix it, open the pull request and get it reviewed before you leave.</li>
             </ol>
+            <p className="chat">
+              Questions before the day, or looking for a teammate? <a href={event.discordUrl} target="_blank" rel="noopener">Join our Discord</a>.
+            </p>
           </div>
           <div className="facts">
             <Countdown />
@@ -51,6 +54,7 @@ export function Mission() {
               <div className="row"><dt>Host</dt><dd>{event.host}</dd></div>
               <div className="row"><dt>Who</dt><dd>University students and working professionals</dd></div>
               <div className="row"><dt>Bring</dt><dd>Laptop, charger, GitHub account</dd></div>
+              <div className="row"><dt>Chat</dt><dd><a href={event.discordUrl} target="_blank" rel="noopener">Join our Discord</a></dd></div>
             </dl>
           </div>
         </m.div>
@@ -243,6 +247,7 @@ export function Footer() {
         <div className="row">
           <div>© 2026 {event.host} · Hacktoberfest Hack Day San Antonio</div>
           <div className="links">
+            <a href={event.discordUrl} target="_blank" rel="noopener">Discord</a>
             <a href={event.codeOfConductUrl} target="_blank" rel="noopener">MLH Code of Conduct</a>
             <a href={event.mlhEventUrl} target="_blank" rel="noopener">Event on MLH</a>
             <a href={event.hacktoberfestUrl} target="_blank" rel="noopener">Hacktoberfest</a>
