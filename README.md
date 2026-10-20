@@ -34,11 +34,12 @@ Design references, in priority order: the Octocat-at-the-airlock image in `~/Des
 
 ## Registration portal (Supabase)
 
-Registration lives on this site, not on MLH.
+Registration lives on this site. People who signed up on the MLH event page first are imported into the roster (see the MLH bullet below).
 
 - **`/register`** (`src/components/Portal.tsx`): one screen with name, email, phone, dietary restrictions, optional extra-credit class, the terms and conditions chart (`terms` in `src/data.ts`), an agree checkbox, and a password chosen at the end. Submitting creates the Supabase Auth account and the `registrations` row in one go. No agreement, no account: the browser blocks the submit, the code blocks it again, and the database rejects a row with `agreed = false`. Email confirmation is off so the free tier's email limit cannot block signups.
 - **Logged-in attendees** see a boarding pass styled as a ticket (passenger, flight RL-1031, gate, seat) with a QR code and an eight-character ticket code, plus a countdown, a pre-launch checklist, the schedule, and their details with an edit form. Ticket codes are random (`gen_ticket()` in the database, alphabet without look-alike glyphs), assigned by the insert trigger and never changeable from the client. The QR encodes `/organizer?code=XXXXXXXX`, so any phone camera works as a scanner. Actions under the pass: Add to Apple Wallet (Apple devices, only once the pass certificate is configured), Add to calendar (`public/hack-day.ics`), Map.
 - **`/organizer`**: for emails in the `organizers` table. Totals, search by name, email, phone or ticket code, one-click check-in and undo, extra credit grouped by class, and an organizers panel to add or remove organizer emails. The first organizer was seeded by migration; after that, organizers manage the list themselves.
+- **MLH signups:** download the registrations CSV from the MLH event dashboard and run `node scripts/import-mlh.mjs <file>.csv`. It upserts into `mlh_registrations` on the linked project (name, email, phone, dietary only), keeps any check-ins, and removes people no longer registered on MLH, so re-run it with each fresh export. The roster shows them with "MLH" in the ticket column and checks them in like everyone else; anyone who also registered here appears once, as their site registration. Only organizers can read or update that table. The export holds attendee data, so keep it out of this repo.
 - Only organizers can set or clear `checked_in_at` and nobody can change a ticket code (both enforced in the `registrations_stamp` trigger). Attendees can only read and edit their own row. Anonymous requests get nothing. Returning attendees use "Already registered? Log in"; password resets go through Supabase's built-in mailer, which allows a few messages an hour.
 
 ### Apple Wallet passes
@@ -49,7 +50,7 @@ The Supabase project is `rowdylaunch` (ref `sejafunjijjhszotyiht`) in the org Ro
 
 - **Run it locally:** copy `.env.example` to `.env.local` and fill in the project URL and publishable key from Project Settings, API Keys. Both are set on Vercel for production.
 - **Change the schema:** add a file under `supabase/migrations`, then `supabase link --project-ref sejafunjijjhszotyiht` and `supabase db push`. Change auth settings in `config.toml` and run `npx supabase@latest config push` (the Homebrew 2.106 binary fails on a storage-schema mismatch).
-- **After the event,** send each professor the checked-in names for their class from the organizer dashboard, then delete the registrations. The terms promise that.
+- **After the event,** send each professor the checked-in names for their class from the organizer dashboard, then delete the registrations and the MLH rows. The terms promise that.
 
 The map in Ground control is a static render (`public/map.jpg`) of OpenStreetMap tiles around the Business Building, darkened to match the site. Re-render it if the venue changes; the attribution line on it is required by OpenStreetMap's licence.
 

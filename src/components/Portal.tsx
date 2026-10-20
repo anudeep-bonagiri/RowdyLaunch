@@ -577,9 +577,19 @@ type Filter = "all" | "in" | "out" | "credit" | "diet";
 const filters: [Filter, string][] = [["all", "Everyone"], ["out", "Not yet in"], ["in", "Checked in"], ["credit", "Extra credit"], ["diet", "Dietary"]];
 const hasDiet = (r: Reg) => Boolean(r.dietary && !noDiet.test(r.dietary.trim()));
 
+// MLH signups (loaded by scripts/import-mlh.mjs) join the roster unless the
+// same email also registered here. They have no ticket; staff find them by name.
+type Row = Reg & { mlh_id?: number };
+type Mlh = { mlh_id: number; email: string; name: string; phone: string | null; dietary: string | null; registered_at: string; checked_in_at: string | null };
+const MLH_COLS = "mlh_id,email,name,phone,dietary,registered_at,checked_in_at";
+const fromMlh = (m: Mlh): Row => ({
+  user_id: `mlh-${m.mlh_id}`, mlh_id: m.mlh_id, ticket: "", email: m.email, name: m.name, phone: m.phone ?? "",
+  dietary: m.dietary, extra_credit_class: null, created_at: m.registered_at, checked_in_at: m.checked_in_at,
+});
+
 function OrganizerDashboard({ session }: { session: Session }) {
   const me = (session.user.email ?? "").toLowerCase();
-  const [rows, setRows] = useState<Reg[] | null>(null);
+  const [rows, setRows] = useState<Row[] | null>(null);
   const [orgs, setOrgs] = useState<string[] | null>(null);
   const [loadedAt, setLoadedAt] = useState<Date | null>(null);
   const [scanCode, setScanCode] = useState(() => normTicket(new URLSearchParams(location.search).get("code") ?? ""));
@@ -589,12 +599,17 @@ function OrganizerDashboard({ session }: { session: Session }) {
   const [orgMsg, setOrgMsg] = useState<Msg>(null);
 
   const load = async () => {
-    const [r, o] = await Promise.all([
+    const [r, m, o] = await Promise.all([
       supabase.from("registrations").select(REG_COLS).order("created_at"),
+      supabase.from("mlh_registrations").select(MLH_COLS).order("registered_at"),
       supabase.from("organizers").select("email").order("email"),
     ]);
-    if (r.error) setMsg({ text: friendly(r.error.message), bad: true });
-    setRows((r.data as Reg[] | null) ?? []);
+    const err = r.error ?? m.error;
+    if (err) setMsg({ text: friendly(err.message), bad: true });
+    const site = (r.data as Reg[] | null) ?? [];
+    const here = new Set(site.map((x) => x.email.toLowerCase()));
+    const mlh = ((m.data as Mlh[] | null) ?? []).filter((x) => !here.has(x.email.toLowerCase())).map(fromMlh);
+    setRows([...site, ...mlh].sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at)));
     setOrgs(((o.data as { email: string }[] | null) ?? []).map((x) => x.email));
     setLoadedAt(new Date());
   };
@@ -645,9 +660,11 @@ function OrganizerDashboard({ session }: { session: Session }) {
   const classes = useMemo(() => group((r) => r.extra_credit_class, withCredit), [all]);
   const diets = useMemo(() => group((r) => r.dietary, withDiet), [all]);
 
-  const toggle = async (r: Reg) => {
+  const toggle = async (r: Row) => {
     const v = r.checked_in_at ? null : new Date().toISOString();
-    const { error, data } = await supabase.from("registrations").update({ checked_in_at: v }).eq("user_id", r.user_id).select("user_id");
+    const { error, data } = r.mlh_id
+      ? await supabase.from("mlh_registrations").update({ checked_in_at: v }).eq("mlh_id", r.mlh_id).select("mlh_id")
+      : await supabase.from("registrations").update({ checked_in_at: v }).eq("user_id", r.user_id).select("user_id");
     if (error || !data?.length) { setMsg({ text: error ? friendly(error.message) : "That row could not be updated.", bad: true }); return; }
     setMsg(null);
     setRows((cur) => (cur ?? []).map((x) => (x.user_id === r.user_id ? { ...x, checked_in_at: v } : x)));
@@ -676,6 +693,7 @@ function OrganizerDashboard({ session }: { session: Session }) {
   };
 
   const pct = all.length ? Math.round((checkedIn / all.length) * 100) : 0;
+  const viaMlh = all.filter((r) => r.mlh_id).length;
 
   return (
     <>
@@ -715,7 +733,7 @@ function OrganizerDashboard({ session }: { session: Session }) {
       )}
 
       <div className="stats" aria-label="Totals">
-        <div className="panel stat"><b>{all.length}</b><span>Registered</span></div>
+        <div className="panel stat"><b>{all.length}</b><span>Registered{viaMlh ? ` · ${viaMlh} via MLH` : ""}</span></div>
         <div className="panel stat"><b>{checkedIn}</b><span>Checked in · {pct}%</span><div className="meter"><i style={{ width: `${pct}%` }} /></div></div>
         <div className="panel stat"><b>{withDiet.length}</b><span>Dietary needs</span></div>
         <div className="panel stat"><b>{withCredit.length}</b><span>Extra credit</span></div>
@@ -739,7 +757,7 @@ function OrganizerDashboard({ session }: { session: Session }) {
               {filtered.map((r) => (
                 <tr key={r.user_id} data-in={r.checked_in_at ? "true" : undefined} className={scanned?.user_id === r.user_id ? "hit" : undefined}>
                   <td>{r.name}</td>
-                  <td className="mono">{formatTicket(r.ticket)}</td>
+                  <td className={r.mlh_id ? "muted" : "mono"}>{r.mlh_id ? "MLH" : formatTicket(r.ticket)}</td>
                   <td>{r.email}</td>
                   <td>{r.phone}</td>
                   <td>{r.dietary ?? ""}</td>
